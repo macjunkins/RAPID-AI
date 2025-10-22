@@ -1,0 +1,47 @@
+# AI Development Workflow Configuration Template
+
+project:
+  type: "generic"  # flutter, react, python, go, generic
+  name: "sample-project"
+  architecture: []  # e.g., [bloc, drift] for Flutter, [redux, hooks] for React
+  
+ai_tools:
+  - "copilot"  # Primary AI tool
+  # - "claude"   # Secondary options
+  # - "gpt4"
+
+workflows:
+  story_analysis:
+    enabled: true
+    timeout: 120  # seconds
+    outputs:
+      - "docs/discovery/{epic}-{story}-discovery.md"
+      - "docs/plans/{epic}-{story}-plan.md"
+    
+  implementation_planning:
+    enabled: true
+    include_testing: true
+    include_architecture: true
+
+integrations:
+  vscode:
+    enabled: true
+    auto_open_files: true
+    tasks_enabled: true
+    
+  git:
+    auto_branch: true
+    branch_pattern: "story/{epic}-{story}-{slug}"
+    auto_commit: false
+    
+  documentation:
+    auto_generate: true
+    output_format: "markdown"
+    include_metadata: true
+
+# Project-specific settings (customize per project)
+custom:
+  prd_file: "docs/prd.md"
+  discovery_dir: "docs/discovery"
+  plans_dir: "docs/plans"
+  scripts_dir: "scripts"

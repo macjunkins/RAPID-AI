@@ -1,0 +1,58 @@
+{
+  "name": "rapid-ai",
+  "version": "1.0.0",
+  "description": "RAPID-AI: Requirements-Analysis-Planning-Implementation-Development with AI automation",
+  "main": "dist/index.js",
+  "bin": {
+    "rapid": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "rapid-ai",
+    "ai",
+    "development",
+    "workflow",
+    "automation",
+    "copilot",
+    "claude",
+    "vscode",
+    "flutter",
+    "react",
+    "story-analysis",
+    "bmad-method"
+  ],
+  "author": "John Junkins",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.0.0",
+    "inquirer": "^9.2.0",
+    "yaml": "^2.3.0",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/inquirer": "^9.0.0"
+  },
+  "files": [
+    "dist/",
+    "core/",
+    "adapters/",
+    "templates/",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/rapid-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/rapid-ai/issues"
+  },
+  "homepage": "https://github.com/yourusername/rapid-ai#readme"
+}

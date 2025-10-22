@@ -1,0 +1,115 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "AI Workflow: Analyze Story",
+            "type": "shell",
+            "command": "${workspaceFolder}/ai-dev-workflow/core/scripts/ai-discovery.sh",
+            "args": [
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}",
+                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "ai-workflow",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    },
+                    {
+                        "regexp": "^⚠️\\s+(.+)$",
+                        "message": 1,
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
+            "label": "AI Workflow: Generate Implementation Plan",
+            "type": "shell",
+            "command": "${workspaceFolder}/ai-dev-workflow/core/scripts/ai-implementation-plan.sh",
+            "args": [
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}",
+                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md",
+                "${workspaceFolder}/docs/plans/story-${input:epic}-${input:story}-plan.md"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "AI Workflow: Flutter Analysis",
+            "type": "shell",
+            "command": "${workspaceFolder}/ai-dev-workflow/adapters/flutter/scripts/flutter-discovery.sh",
+            "args": [
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}",
+                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "AI Workflow: Complete Story Setup",
+            "type": "shell",
+            "command": "echo",
+            "args": ["Complete workflow: Analysis → Plan → Documentation"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "AI Workflow: Analyze Story",
+                "AI Workflow: Generate Implementation Plan"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "epic",
+            "description": "Epic number",
+            "default": "1",
+            "type": "promptString"
+        },
+        {
+            "id": "story",
+            "description": "Story number",
+            "default": "1",
+            "type": "promptString"
+        },
+        {
+            "id": "title",
+            "description": "Story title",
+            "default": "New Feature",
+            "type": "promptString"
+        }
+    ]
+}
