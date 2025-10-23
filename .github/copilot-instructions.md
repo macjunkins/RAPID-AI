@@ -1,61 +1,49 @@
+````instructions
 # RAPID-AI Framework - AI Coding Agent Instructions
 
 ## Project Overview
-RAPID-AI is a **framework for AI-powered development workflows** extracted from the production EmberCare healthcare app. It automates story analysis and implementation planning with 85-90% time reduction proven in production.
+RAPID-AI is a **systematic AI-powered SDLC framework** extracted from the production EmberCare healthcare app. It provides structured, repeatable processes for AI-assisted story analysis and implementation planning, with **VS Code tasks as the primary interface**.
 
 ## Core Architecture
 
-### Three-Layer Design
+### Three-Layer Design + BMAD Integration
 1. **Core Framework** (`core/`): Language-agnostic shell scripts and AI integration
-2. **Adapters** (`adapters/`): Project-specific implementations (Flutter proven, React/Python/Go planned)  
-3. **Templates & Examples** (`templates/`, `examples/`): Reusable configurations and real-world usage
+2. **Adapters** (`adapters/`): Project-specific implementations (Flutter proven from EmberCare)  
+3. **Templates & Examples** (`templates/`, `examples/`): VS Code tasks and reusable configurations
+4. **BMAD Method Integration** (`.bmad-core/`): Extracted agent workflows and structured development processes
 
-### Key Insight: Framework vs CLI
-- `core/scripts/` = Bash framework that does the actual AI integration work
-- `src/cli.js` = Node.js wrapper for better UX and npm distribution
-- Most logic lives in shell scripts for portability across environments
+### Critical Insight: Task-Driven, Not CLI-Driven
+- **Primary Interface**: VS Code tasks in `templates/vscode/tasks.json` calling shell scripts
+- **Secondary Interface**: Optional CLI wrapper in `src/cli.js` for command-line users
+- **Core Logic**: Bash scripts in `core/scripts/` for maximum portability
+- **Architecture**: Task-driven workflow automation, not a traditional application
 
 ## Essential Patterns
 
+### VS Code Tasks Integration (Primary Interface)
+```jsonc
+// templates/vscode/tasks.json - Main user interface
+{
+    "label": "AI Workflow: Analyze Story",
+    "command": "${workspaceFolder}/core/scripts/ai-discovery.sh",
+    "args": ["${input:epic}", "${input:story}", "${input:title}", "output.md"],
+    "problemMatcher": {
+        "pattern": [{"regexp": "^❌\\s+(.+)$", "message": 1}]
+    }
+}
+```
+**Key**: Tasks provide parameterized inputs and error detection. Problem matchers catch AI workflow errors.
+
 ### AI Integration Flow (core/workflows/common-functions.sh)
 ```bash
-# AI tools are abstracted through run_ai_analysis()
+# AI tools abstracted through run_ai_analysis()
 case "$tool" in
     "copilot") timeout ${timeout}s copilot -p "$prompt" > "$temp_output" ;;
     "claude") timeout ${timeout}s claude_api_call "$prompt" > "$temp_output" ;;
 ```
-**Key**: Framework supports multiple AI tools but only GitHub Copilot CLI is implemented. Claude/GPT4 are stubs.
+**Key**: Only GitHub Copilot CLI fully implemented. Claude/GPT4 are stubs for future expansion.
 
-### Project-Specific Prompts (adapters/flutter/scripts/flutter-discovery.sh)
-```bash
-# This exact prompt pattern works for EmberCare production
-local prompt="Read docs/prd.md and find Story $epic.$story: $title.
-For this Flutter story using BLoC + Drift architecture, provide:
-1. **Story Requirements Summary** ..."
-```
-**Pattern**: Each adapter customizes AI prompts for architecture (BLoC+Drift for Flutter).
-
-### Configuration-Driven Behavior (.ai-workflow.yaml)
-```yaml
-project:
-  type: "flutter"  # Determines which adapter to use
-  architecture: ["bloc", "drift"]  # Passed to AI prompts
-ai_tools: ["copilot"]  # Tool selection
-```
-
-## Critical Integration Points
-
-### VS Code Tasks Integration
-- Framework provides `templates/vscode/tasks.json` with parameterized inputs
-- Tasks call framework scripts directly: `${workspaceFolder}/ai-dev-workflow/core/scripts/ai-discovery.sh`
-- Problem matchers detect AI workflow errors: `"❌\\s+(.+)$"`
-
-### BMAD Method Integration  
-- Project includes BMAD agent definitions in `AGENTS.md` (auto-generated)
-- BMAD provides structured agent roles (dev, architect, pm, etc.) for AI-powered development
-- CLI scripts bridge BMAD methodology with AI tools: `npm run bmad:refresh`
-
-### Environment Detection (common-functions.sh)
+### Environment-Aware Progress (core/workflows/common-functions.sh)
 ```bash
 detect_environment() {
     if [ "$TERM_PROGRAM" = "vscode" ]; then echo "vscode"
@@ -63,7 +51,43 @@ detect_environment() {
     else echo "terminal"; fi
 }
 ```
-**Purpose**: Adapts progress indicators and file opening behavior per environment.
+**Pattern**: Adapts progress indicators and file opening behavior per environment. VS Code gets enhanced feedback.
+
+### Project-Specific Prompts (adapters/flutter/scripts/flutter-discovery.sh)
+```bash
+# EmberCare production-tested prompt pattern
+local prompt="Read docs/prd.md and find Story $epic.$story: $title.
+For this Flutter story using BLoC + Drift architecture, provide:
+1. **Story Requirements Summary** ..."
+```
+**Pattern**: Each adapter customizes AI prompts for specific architecture patterns.
+
+## Critical Integration Points
+
+### Configuration-Driven Behavior (.ai-workflow.yaml)
+```yaml
+project:
+  type: "flutter"  # Determines which adapter to use
+  architecture: ["bloc", "drift"]  # Passed to AI prompts
+ai_tools: ["copilot"]  # Tool selection
+workflows:
+  story_analysis:
+    enabled: true
+    timeout: 120
+    outputs: ["docs/discovery/{epic}-{story}-discovery.md"]
+```
+
+### VS Code Tasks Integration
+- Framework provides `templates/vscode/tasks.json` with parameterized inputs
+- Tasks call framework scripts directly: `${workspaceFolder}/core/scripts/ai-discovery.sh`
+- Problem matchers detect AI workflow errors: `"❌\\s+(.+)$"`
+- Input variables: `${input:epic}`, `${input:story}`, `${input:title}` for interactive prompts
+
+### BMAD Method Integration  
+- Project includes BMAD agent definitions in `AGENTS.md` (auto-generated from `.bmad-core/`)
+- BMAD provides structured agent roles (dev, architect, pm, etc.) for AI-powered development
+- CLI scripts bridge BMAD methodology with AI tools: `npm run bmad:refresh`
+- Extract workflows/templates from `.bmad-core/` without branding
 
 ## Development Commands
 
@@ -88,6 +112,12 @@ npx rapid analyze 1 4 "User Authentication"
 npx rapid plan 1 4 "User Authentication"
 ```
 
+### VS Code Task Usage (Primary Interface)
+- Open Command Palette: `Cmd+Shift+P` (macOS) / `Ctrl+Shift+P` (Windows/Linux)
+- Search for: "Tasks: Run Task"
+- Select: "AI Workflow: Analyze Story", "AI Workflow: Complete Story Setup", etc.
+- Input prompts will ask for epic number, story number, and title
+
 ## File Creation Patterns
 
 ### Discovery Documents
@@ -101,6 +131,12 @@ Generated in `docs/discovery/story-{epic}-{story}-discovery.md` with:
 - `.ai-workflow.yaml` drives project type detection and AI prompt customization
 - `pubspec.yaml` presence → Flutter adapter
 - `package.json` with React deps → React adapter (planned)
+
+### BMAD Integration Outputs
+- `.bmad-core/agents/` → Extracted agent definitions  
+- `.bmad-core/tasks/` → Reusable workflow tasks
+- `.bmad-core/templates/` → Document templates
+- `AGENTS.md` → Auto-generated agent summaries for Copilot consumption
 
 ## Testing Philosophy
 
@@ -128,6 +164,11 @@ Generated analysis must include:
 - Claude/OpenAI are placeholder functions for future implementation
 - Framework structure supports multiple tools but current focus is Copilot
 
+### BMAD Method Constraints
+- Extract workflows/templates from `.bmad-core/` without BMAD branding
+- Maintain compatibility with existing BMAD structure during extraction
+- Focus on systematic SDLC processes rather than specific methodology
+
 ### EmberCare Backward Compatibility
 Framework extraction maintains 100% compatibility with existing EmberCare scripts - they become thin wrappers calling the framework.
 
@@ -137,3 +178,5 @@ Framework extraction maintains 100% compatibility with existing EmberCare script
 ❌ Don't assume npm/Node.js in core scripts - they run in any shell  
 ❌ Don't break EmberCare compatibility - it's the proven reference implementation  
 ❌ Don't implement AI integrations in TypeScript - shell scripts are more portable
+❌ Don't modify BMAD branding in extracted content - remove it cleanly
+❌ Don't bypass VS Code tasks as primary interface - CLI is secondary convenience
