@@ -4,7 +4,7 @@
         {
             "label": "AI Workflow: Analyze Story",
             "type": "shell",
-            "command": "${workspaceFolder}/ai-dev-workflow/core/scripts/ai-discovery.sh",
+            "command": "${workspaceFolder}/core/scripts/ai-discovery.sh",
             "args": [
                 "${input:epic}",
                 "${input:story}",
@@ -39,7 +39,7 @@
         {
             "label": "AI Workflow: Generate Implementation Plan",
             "type": "shell",
-            "command": "${workspaceFolder}/ai-dev-workflow/core/scripts/ai-implementation-plan.sh",
+            "command": "${workspaceFolder}/core/scripts/ai-implementation-plan.sh",
             "args": [
                 "${input:epic}",
                 "${input:story}",
@@ -58,7 +58,7 @@
         {
             "label": "AI Workflow: Flutter Analysis",
             "type": "shell",
-            "command": "${workspaceFolder}/ai-dev-workflow/adapters/flutter/scripts/flutter-discovery.sh",
+            "command": "${workspaceFolder}/adapters/flutter/scripts/flutter-discovery.sh",
             "args": [
                 "${input:epic}",
                 "${input:story}",

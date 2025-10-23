@@ -3,6 +3,23 @@
 # Common functions for AI development workflow
 # Language-agnostic functionality extracted from EmberCare implementation
 
+# Validate script paths and environment
+validate_environment() {
+    local script_dir="$1"
+    local required_files=("$script_dir/../workflows/common-functions.sh")
+    
+    for file in "${required_files[@]}"; do
+        if [ ! -f "$file" ]; then
+            echo "❌ Required file not found: $file"
+            echo "💡 Please ensure RAPID-AI is properly installed and you're running from the correct directory."
+            echo "📋 Expected structure: core/workflows/common-functions.sh should exist"
+            return 1
+        fi
+    done
+    
+    return 0
+}
+
 # Detect environment
 detect_environment() {
     if [ "$TERM_PROGRAM" = "vscode" ]; then
@@ -19,46 +36,119 @@ show_progress() {
     local duration=${1:-120}
     local environment=$(detect_environment)
     local elapsed=0
+    local start_time=$(date +%s)
     
     if [ "$environment" = "vscode" ]; then
-        # Simple progress for VS Code
-        echo "🤖 AI is analyzing... Please wait..."
-        while [ $elapsed -lt $duration ]; do
-            if ! kill -0 $AI_PID 2>/dev/null; then
-                break
-            fi
-            echo "⏳ Still processing... ($elapsed seconds elapsed)"
-            sleep 10
-            elapsed=$((elapsed + 10))
-        done
-    else
-        # Animated progress bar for terminals
-        local interval=5
-        local total_dots=10
+        # Enhanced progress for VS Code with elapsed time tracking
+        echo "🤖 AI is analyzing... Please wait (timeout: ${duration}s)"
         
         while [ $elapsed -lt $duration ]; do
             if ! kill -0 $AI_PID 2>/dev/null; then
+                local end_time=$(date +%s)
+                local total_elapsed=$((end_time - start_time))
+                echo "✅ Analysis completed in ${total_elapsed} seconds"
+                break
+            fi
+            
+            local remaining=$((duration - elapsed))
+            echo "⏳ Still processing... (${elapsed}s elapsed, ${remaining}s remaining)"
+            sleep 10
+            elapsed=$((elapsed + 10))
+        done
+        
+        # Check for timeout
+        if [ $elapsed -ge $duration ] && kill -0 $AI_PID 2>/dev/null; then
+            echo "⚠️ Analysis is taking longer than expected (${duration}s timeout reached)"
+            echo "💡 The process may still complete. Check the output file or try again with a simpler prompt."
+        fi
+    else
+        # Animated progress bar for terminals with enhanced feedback
+        local interval=5
+        local total_dots=20
+        
+        echo "🤖 AI is analyzing... (timeout: ${duration}s)"
+        
+        while [ $elapsed -lt $duration ]; do
+            if ! kill -0 $AI_PID 2>/dev/null; then
+                local end_time=$(date +%s)
+                local total_elapsed=$((end_time - start_time))
+                printf "\r✅ Analysis completed in %d seconds\n" "$total_elapsed"
                 break
             fi
             
             local progress=$((elapsed * 100 / duration))
             local dots=$((progress * total_dots / 100))
             local bar=""
+            local remaining=$((duration - elapsed))
             
             for i in $(seq 1 $total_dots); do
                 if [ $i -le $dots ]; then
                     bar="${bar}█"
                 else
-                    bar="${bar} "
+                    bar="${bar}░"
                 fi
             done
             
-            printf "\r💭 Progress: [%s] %d%%" "$bar" "$progress"
+            printf "\r💭 Progress: [%s] %d%% (%ds remaining)" "$bar" "$progress" "$remaining"
             sleep $interval
             elapsed=$((elapsed + interval))
         done
-        echo "" # New line after progress
+        
+        # Check for timeout
+        if [ $elapsed -ge $duration ] && kill -0 $AI_PID 2>/dev/null; then
+            printf "\r⚠️ Timeout reached after %d seconds                    \n" "$duration"
+            echo "💡 The process may still complete. Check the output file or try again."
+        fi
+        
+        echo "" # Ensure new line after progress
     fi
+}
+
+# Check AI tool availability
+check_ai_tool_availability() {
+    local tool=$1
+    
+    case "$tool" in
+        "copilot")
+            if ! command -v copilot &> /dev/null; then
+                echo "❌ GitHub Copilot CLI not found"
+                echo "💡 To install GitHub Copilot CLI:"
+                echo "   1. Visit: https://github.com/github/gh-copilot"
+                echo "   2. Install via: gh extension install github/gh-copilot"
+                echo "   3. Authenticate: gh auth login"
+                echo "   4. Verify: copilot --version"
+                return 1
+            fi
+            
+            # Check if copilot is authenticated
+            if ! copilot auth status &> /dev/null; then
+                echo "❌ GitHub Copilot CLI not authenticated"
+                echo "💡 To authenticate GitHub Copilot CLI:"
+                echo "   1. Run: gh auth login"
+                echo "   2. Follow the authentication prompts"
+                echo "   3. Verify: copilot auth status"
+                return 1
+            fi
+            ;;
+        "claude")
+            echo "⚠️ Claude API integration not yet implemented"
+            echo "💡 Available tools: copilot"
+            return 1
+            ;;
+        "gpt4")
+            echo "⚠️ OpenAI GPT-4 integration not yet implemented" 
+            echo "💡 Available tools: copilot"
+            return 1
+            ;;
+        *)
+            echo "❌ Unsupported AI tool: $tool"
+            echo "💡 Supported tools: copilot"
+            echo "📋 To configure AI tool, update AI_TOOL environment variable or .ai-workflow.yaml"
+            return 1
+            ;;
+    esac
+    
+    return 0
 }
 
 # Run AI analysis with tool abstraction
@@ -68,7 +158,15 @@ run_ai_analysis() {
     local output_file=$3
     local timeout=${4:-120}
     
-    echo "📊 Generating analysis..."
+    # Check tool availability first
+    if ! check_ai_tool_availability "$tool"; then
+        echo "🔄 Creating fallback template due to AI tool unavailability..."
+        create_fallback_template "$output_file"
+        echo "📝 Fallback template created: $output_file"
+        return 1
+    fi
+    
+    echo "📊 Generating analysis with $tool..."
     echo "🤖 AI is thinking... (this may take 30-60 seconds)"
     
     # Create temp file for output
@@ -81,20 +179,22 @@ run_ai_analysis() {
     # Run AI tool with timeout
     case "$tool" in
         "copilot")
-            timeout ${timeout}s copilot -p "$prompt" > "$temp_output" &
+            timeout ${timeout}s copilot -p "$prompt" > "$temp_output" 2>&1 &
             AI_PID=$!
             ;;
         "claude")
-            timeout ${timeout}s claude_api_call "$prompt" > "$temp_output" &
+            timeout ${timeout}s claude_api_call "$prompt" > "$temp_output" 2>&1 &
             AI_PID=$!
             ;;
         "gpt4")
-            timeout ${timeout}s openai_api_call "$prompt" > "$temp_output" &
+            timeout ${timeout}s openai_api_call "$prompt" > "$temp_output" 2>&1 &
             AI_PID=$!
             ;;
         *)
             echo "❌ Unsupported AI tool: $tool"
-            exit 1
+            kill $progress_pid 2>/dev/null || true
+            rm -f "$temp_output"
+            return 1
             ;;
     esac
     
@@ -109,12 +209,24 @@ run_ai_analysis() {
     if [ $exit_code -eq 0 ] && [ -s "$temp_output" ]; then
         # Success - process output
         process_ai_output "$temp_output" "$output_file"
-        echo "✅ Analysis complete"
-    else
-        # Failure - create fallback
-        echo "⚠️ AI analysis timed out or failed, creating template..."
+        echo "✅ Analysis complete: $output_file"
+    elif [ $exit_code -eq 124 ]; then
+        # Timeout
+        echo "⚠️ AI analysis timed out after ${timeout} seconds"
+        echo "💡 Try again with a simpler prompt or increase timeout (AI_TIMEOUT environment variable)"
+        echo "🔄 Creating fallback template..."
         create_fallback_template "$output_file"
-        echo "📝 Fallback template created"
+        echo "📝 Fallback template created: $output_file"
+    else
+        # Other failure
+        echo "⚠️ AI analysis failed (exit code: $exit_code)"
+        if [ -s "$temp_output" ]; then
+            echo "📋 Error details:"
+            head -n 5 "$temp_output" | sed 's/^/   /'
+        fi
+        echo "🔄 Creating fallback template..."
+        create_fallback_template "$output_file"
+        echo "📝 Fallback template created: $output_file"
     fi
     
     # Cleanup
@@ -122,6 +234,8 @@ run_ai_analysis() {
     
     # Auto-open in editor if available
     auto_open_file "$output_file"
+    
+    return $exit_code
 }
 
 # Process AI output and add metadata
