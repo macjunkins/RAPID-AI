@@ -13,7 +13,8 @@ Transform any development project with AI-powered story analysis and implementat
 Automates the tedious parts of software development with AI assistance:
 
 - **📖 Story Analysis**: AI reads your requirements and generates technical implementation guidance
-- **🏗️ Implementation Planning**: Detailed step-by-step plans with architecture recommendations  
+- **🏗️ Implementation Planning**: Detailed step-by-step plans with architecture recommendations
+- **📝 Documentation Workflow**: Automated documentation verification keeps docs current with code changes
 - **🔄 Workflow Integration**: VS Code tasks, Git automation, document generation
 - **🌐 Multi-Project**: Works with Flutter, React, Python, Go, and any project type
 - **🤖 Multi-AI**: Supports GitHub Copilot, Claude, GPT-4, and more
@@ -96,7 +97,70 @@ integrations:
   git:
     auto_branch: true
     branch_pattern: "story/{epic}-{story}-{slug}"
+
+# Optional: Documentation workflow (keeps docs current)
+documentation_workflow:
+  enabled: true
+  detection:
+    enabled: true  # Detect when docs need updating
+  ai_analysis:
+    enabled: true  # AI-powered documentation suggestions
+  completion_gate:
+    enabled: false  # Don't block completion (progressive enhancement)
 ```
+
+## 📝 **Documentation Workflow** (NEW)
+
+Keep your documentation current automatically:
+
+### **How It Works**
+1. **Automatic Detection**: Identifies when code changes require doc updates
+2. **AI-Powered Suggestions**: Get actionable documentation improvement recommendations
+3. **Progressive Enhancement**: Enable features incrementally (detection → suggestions → enforcement)
+
+### **Configuration Levels**
+
+**Level 1: Detection (Default)**
+```yaml
+documentation_workflow:
+  enabled: true
+  detection:
+    enabled: true  # Informational only
+```
+
+**Level 2: AI Suggestions**
+```yaml
+documentation_workflow:
+  ai_analysis:
+    enabled: true  # Get AI-powered recommendations
+```
+
+**Level 3: Enforcement (Optional)**
+```yaml
+documentation_workflow:
+  completion_gate:
+    enabled: true  # Block completion for critical gaps
+    enforce_on_critical: true
+```
+
+### **Usage**
+```bash
+# Detect documentation needs from git changes
+./core/scripts/doc-detection.sh --git-diff
+
+# Get AI-powered suggestions for specific files
+./core/scripts/doc-detection.sh --suggest --files "lib/blocs/medication_bloc.dart"
+
+# Run documentation verification
+./core/scripts/task-completion-verification.sh
+```
+
+**VS Code Integration:**
+- `Documentation: Check Status` - Quick documentation health check
+- `Documentation: Interactive Helper` - Guided documentation assistance
+- Problem matchers surface documentation issues in VS Code Problems panel
+
+**See:** `docs/architecture/documentation-workflow.md` for complete details
 
 ## 🎨 **Usage Examples**
 

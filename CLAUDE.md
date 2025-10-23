@@ -133,14 +133,75 @@ Generated in `docs/discovery/story-{epic}-{story}-discovery.md` with:
 
 ## Documentation Workflow Integration
 
-The dev agent includes **mandatory documentation verification** before task completion:
+The framework includes **optional documentation verification** integrated into development workflows:
 
-1. **validate-documentation-currency**: Check if documentation is current with code changes
-2. **update-documentation**: Guide for updating specific documentation sections
-3. **documentation-completion-gate**: Prevent task completion without documentation verification
-4. **documentation-currency-checklist**: Systematic checklist for documentation validation
+### Core Documentation Features
 
-This ensures user-facing documentation stays current with development changes and prevents completion of tasks with outstanding documentation requirements.
+1. **Documentation Detection** (`core/scripts/doc-detection.sh`):
+   - Automatically detects when file changes require documentation updates
+   - Pattern-based mapping of code changes to documentation files
+   - Multiple analysis modes: git-diff, specific files, AI-powered suggestions
+   - Adapter-specific detection via configuration (e.g., Flutter BLoC/Drift mapping)
+
+2. **Task Completion Verification** (`core/scripts/task-completion-verification.sh`):
+   - Optional documentation verification before task completion
+   - Configurable blocking based on severity (critical/major/minor)
+   - Systematic checklist validation
+   - AI-powered gap analysis with actionable recommendations
+
+3. **Documentation Currency Checklist** (`core/checklists/documentation-currency-checklist.md`):
+   - Comprehensive systematic validation across all documentation dimensions
+   - Generalized from BMAD patterns for any project type
+   - Project-type specific sections via adapters
+   - Severity-based prioritization
+
+### Progressive Enhancement Design
+
+Documentation features use a **progressive enhancement** approach:
+
+- **Level 1 (Default):** Detection only - identifies documentation needs (informational)
+- **Level 2:** AI-powered suggestions - comprehensive gap analysis with recommendations
+- **Level 3:** Completion gate - blocks task completion for critical gaps (optional)
+
+**Configuration-Driven:**
+```yaml
+documentation_workflow:
+  enabled: true  # Enable documentation features
+  detection:
+    enabled: true  # Detect documentation needs
+  ai_analysis:
+    enabled: true  # AI-powered suggestions
+  completion_gate:
+    enabled: false  # Don't block by default (progressive enhancement)
+```
+
+### Adapter Integration
+
+**Flutter Adapter** (`adapters/flutter/`):
+- Flutter-specific documentation mapping via `config/doc-mapping.yaml`
+- BLoC/Drift/UI changes mapped to relevant documentation
+- EmberCare-compatible patterns preserved
+- Non-breaking enhancement (additive only)
+
+**Future Adapters:**
+- React, Python, Go adapters will follow same enhancement pattern
+- Each adapter defines project-type specific documentation mappings
+
+### VS Code Task Integration
+
+**Documentation-Aware Tasks:**
+- 6 enhanced workflow tasks include documentation detection
+- 4 documentation helper tasks (status check, guidelines, interactive helper)
+- Problem matchers surface documentation issues in Problems panel
+- Progress indicators show documentation status
+
+**Backward Compatibility:**
+- All documentation features can be disabled via configuration
+- Existing workflows unchanged when documentation features disabled
+- EmberCare adapter maintains 100% compatibility
+- No performance impact when features disabled
+
+This ensures user-facing documentation stays current with development changes while maintaining development velocity and preserving existing RAPID-AI functionality.
 
 ## Testing Philosophy
 
