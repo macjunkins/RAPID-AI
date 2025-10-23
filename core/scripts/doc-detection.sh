@@ -288,6 +288,8 @@ generate_suggestions() {
     
     while IFS= read -r doc_file; do
         if [[ -n "$doc_file" ]]; then
+            # Format for VS Code problem matcher integration
+            echo "📋 Documentation required for: $doc_file"
             echo "• $doc_file"
             
             # Provide specific suggestions based on file type
@@ -298,24 +300,26 @@ generate_suggestions() {
                 docs/architecture/*)
                     echo "  → Update architecture diagrams and technical details"
                     ;;
-                templates/vscode/README.md)
-                    echo "  → Update VS Code task documentation"
+                docs/*)
+                    echo "  → Update technical documentation and examples"
                     ;;
-                examples/*/README.md)
-                    echo "  → Update example usage and integration guides"
+                examples/*)
+                    echo "  → Update usage examples and integration guides"
                     ;;
-                docs/*/index.md)
-                    echo "  → Update section index and navigation"
+                *)
+                    echo "  → Review and update as needed"
                     ;;
             esac
             echo
         fi
     done <<< "$docs_to_update"
     
-    echo "💡 Use the AI analysis tools to help generate updated content:"
-    echo "   • Run: core/scripts/ai-discovery.sh with documentation prompts"
-    echo "   • Review: existing documentation for consistency"
-    echo "   • Test: updated documentation with real usage scenarios"
+    # Provide actionable next steps
+    echo "💡 Next steps:"
+    echo "1. Review each file listed above"
+    echo "2. Update documentation to reflect changes in $file_path"
+    echo "3. Test that examples and instructions still work"
+    echo "4. Verify links and references are correct"
 }
 
 #######################################

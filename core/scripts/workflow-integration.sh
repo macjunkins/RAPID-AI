@@ -210,7 +210,60 @@ vscode_task_wrapper() {
     esac
 }
 
-# Main function for direct script execution
+# Interactive documentation helper
+interactive_documentation_helper() {
+    local epic="$1"
+    local story="$2"
+    local title="$3"
+    
+    echo "📝 Interactive Documentation Update Helper"
+    echo "Story: $epic.$story - $title"
+    echo ""
+    
+    # Check current documentation status
+    echo "🔍 Checking current documentation status..."
+    echo ""
+    
+    # Check what files might need documentation updates
+    local story_file="docs/stories/$epic.$story.*.md"
+    if [ -f "$story_file" ]; then
+        echo "📋 Current story file found: $story_file"
+    else
+        echo "📝 Action required: Story file not found at $story_file"
+    fi
+    
+    # Run documentation detection
+    echo ""
+    echo "🔍 Running documentation detection..."
+    # Call doc-detection script to analyze suggestions for the story context
+    bash "$SCRIPT_DIR/doc-detection.sh" --suggest --files "docs/stories/$epic.$story.*.md,templates/vscode/tasks.json,core/scripts/"
+    
+    echo ""
+    echo "📚 Documentation Guidelines for this story:"
+    echo ""
+    echo "1. ✅ Update user-facing documentation if you've modified:"
+    echo "   - README.md (for framework changes)"
+    echo "   - VS Code task descriptions or functionality"
+    echo "   - CLI interface or commands"
+    echo ""
+    echo "2. ✅ Update technical documentation if you've modified:"
+    echo "   - Core scripts or workflow logic"
+    echo "   - Adapter patterns or EmberCare integration"
+    echo "   - Configuration options or requirements"
+    echo ""
+    echo "3. ✅ Update examples if you've modified:"
+    echo "   - Template files or task configurations"
+    echo "   - Workflow patterns or usage examples"
+    echo ""
+    echo "📝 Action required: Review the detection results above and update identified documentation files"
+    echo ""
+    echo "💡 Next steps:"
+    echo "1. Use 'Documentation: Check Documentation Requirements' to see specific files"
+    echo "2. Update the identified documentation files"
+    echo "3. Use 'Documentation: Verify Task Completion' to confirm updates"
+}
+
+# Main function handling different workflow integration commands
 main() {
     local command="$1"
     shift
@@ -225,6 +278,9 @@ main() {
         "complete")
             integrated_task_completion "$@"
             ;;
+        "help")
+            interactive_documentation_helper "$2" "$3" "$4"
+            ;;
         "vscode")
             vscode_task_wrapper "$@"
             ;;
@@ -235,6 +291,7 @@ main() {
             echo "  analyze <epic> <story> <title> <output-file>     - Enhanced story analysis"
             echo "  plan <epic> <story> <title> <discovery> <plan>   - Enhanced implementation planning"
             echo "  complete <task-id> <story-file> [changes]        - Integrated task completion"
+            echo "  help <epic> <story> <title>                      - Interactive documentation helper"
             echo "  vscode <task-type> [args...]                     - VS Code task wrapper"
             echo ""
             echo "Examples:"

@@ -160,6 +160,7 @@
         },
         {
             "label": "Documentation: Analyze Story with Documentation",
+            "detail": "Analyze story requirements and identify documentation that needs updating",
             "type": "shell",
             "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
             "args": [
@@ -190,12 +191,18 @@
                         "regexp": "^📝\\s+(.+)$",
                         "message": 1,
                         "severity": 2
+                    },
+                    {
+                        "regexp": "^📋\\s+Documentation\\srequired:\\s(.+)$",
+                        "message": "Documentation required: $1",
+                        "severity": 2
                     }
                 ]
             }
         },
         {
             "label": "Documentation: Generate Implementation Plan with Documentation",
+            "detail": "Generate implementation plan with integrated documentation requirements",
             "type": "shell",
             "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
             "args": [
@@ -212,10 +219,26 @@
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "documentation-workflow",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    },
+                    {
+                        "regexp": "^📋\\s+Documentation\\splan:\\s(.+)$",
+                        "message": "Documentation plan: $1",
+                        "severity": 2
+                    }
+                ]
             }
         },
         {
             "label": "Documentation: Verify Task Completion",
+            "detail": "Verify task completion including documentation requirements",
             "type": "shell",
             "command": "${workspaceFolder}/core/scripts/task-completion-verification.sh",
             "args": [
@@ -240,12 +263,18 @@
                     {
                         "regexp": "^❌\\s+(.+)$",
                         "message": 1
+                    },
+                    {
+                        "regexp": "^📝\\s+Documentation\\sissue:\\s(.+)$",
+                        "message": "Documentation issue: $1",
+                        "severity": 2
                     }
                 ]
             }
         },
         {
             "label": "Documentation: Complete Task with Documentation Verification",
+            "detail": "Complete task with mandatory documentation verification step",
             "type": "shell",
             "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
             "args": [
@@ -260,10 +289,26 @@
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "documentation-workflow",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    },
+                    {
+                        "regexp": "^🚫\\s+Documentation\\snot\\scurrent$",
+                        "message": "Documentation verification failed - documentation is not current",
+                        "severity": 1
+                    }
+                ]
             }
         },
         {
             "label": "Documentation: Check Documentation Requirements",
+            "detail": "Check what documentation needs updating based on recent changes",
             "type": "shell",
             "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
             "args": ["git-diff"],
@@ -273,10 +318,22 @@
                 "reveal": "always",
                 "focus": false,
                 "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "documentation-detection",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^📋\\s+Documentation\\srequired\\sfor:\\s(.+)$",
+                        "message": "Documentation required for: $1",
+                        "severity": 2
+                    }
+                ]
             }
         },
         {
             "label": "Documentation: Complete Story Setup with Documentation",
+            "detail": "Complete workflow with documentation: Analysis → Plan → Documentation Verification",
             "type": "shell",
             "command": "echo",
             "args": ["Complete workflow with documentation: Analysis → Plan → Documentation Verification"],
@@ -292,6 +349,83 @@
                 "Documentation: Analyze Story with Documentation",
                 "Documentation: Generate Implementation Plan with Documentation"
             ]
+        },
+        {
+            "label": "Documentation: Quick Documentation Status Check",
+            "detail": "Quick check of current documentation status for active story",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
+            "args": [
+                "files",
+                "docs/stories/${input:epic}.${input:story}.${input:storySlug}.md",
+                "templates/vscode/tasks.json",
+                "core/scripts/",
+                "adapters/"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "documentation-status",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^📋\\s+(.+)\\sneeds\\sdocumentation\\supdate$",
+                        "message": "$1 needs documentation update",
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
+            "label": "Documentation: Show Documentation Guidelines",
+            "detail": "Display documentation guidelines and best practices",
+            "type": "shell",
+            "command": "echo",
+            "args": [
+                "📚 DOCUMENTATION GUIDELINES:\n\n1. User-facing changes require README updates\n2. API changes need documentation in docs/\n3. Configuration changes require example updates\n4. New features need usage examples\n5. Breaking changes must be highlighted\n\n📋 Use 'Documentation: Check Documentation Requirements' to see what needs updating"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Documentation: Interactive Documentation Update Helper",
+            "detail": "Interactive helper to guide through documentation updates",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
+            "args": [
+                "help",
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "documentation-helper",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^📝\\s+Action\\srequired:\\s(.+)$",
+                        "message": "Action required: $1",
+                        "severity": 2
+                    }
+                ]
+            }
         }
     ],
     "inputs": [
