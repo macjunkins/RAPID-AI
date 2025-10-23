@@ -117,6 +117,7 @@
             "label": "Systematic: Quality Checklist",
             "type": "shell",
             "command": "${workspaceFolder}/core/workflows/systematic/quality-checklist.sh",
+            // Explicitly specify 'interactive' mode for clarity, even though it is the script's default.
             "args": ["interactive"],
             "group": "build",
             "presentation": {
