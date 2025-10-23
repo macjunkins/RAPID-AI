@@ -117,6 +117,7 @@ run_interactive_checklist() {
     echo "Review each section and update the checklist file:"
     echo "  File: ${CHECKLIST_FILE}"
     echo ""
+    # NOTE: The script expects checkboxes in the format '[ ]' (with exactly one space between the brackets).
     echo "Mark items as:"
     echo "  [x] Done"
     echo "  [ ] Not Done" 
