@@ -157,6 +157,141 @@
                 "focus": false,
                 "panel": "shared"
             }
+        },
+        {
+            "label": "Documentation: Analyze Story with Documentation",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
+            "args": [
+                "analyze",
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}",
+                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "documentation-workflow",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    },
+                    {
+                        "regexp": "^📝\\s+(.+)$",
+                        "message": 1,
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
+            "label": "Documentation: Generate Implementation Plan with Documentation",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
+            "args": [
+                "plan",
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}",
+                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md",
+                "${workspaceFolder}/docs/plans/story-${input:epic}-${input:story}-plan.md"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Documentation: Verify Task Completion",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/task-completion-verification.sh",
+            "args": [
+                "${input:taskId}",
+                "${workspaceFolder}/docs/stories/${input:epic}.${input:story}.${input:storySlug}.md"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "task-completion",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^🚫\\s+TASK COMPLETION BLOCKED$",
+                        "message": "Task completion blocked - see output for details"
+                    },
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    }
+                ]
+            }
+        },
+        {
+            "label": "Documentation: Complete Task with Documentation Verification",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
+            "args": [
+                "complete",
+                "${input:taskId}",
+                "${workspaceFolder}/docs/stories/${input:epic}.${input:story}.${input:storySlug}.md",
+                "${input:changedFiles}"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Documentation: Check Documentation Requirements",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
+            "args": ["git-diff"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Documentation: Complete Story Setup with Documentation",
+            "type": "shell",
+            "command": "echo",
+            "args": ["Complete workflow with documentation: Analysis → Plan → Documentation Verification"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Documentation: Analyze Story with Documentation",
+                "Documentation: Generate Implementation Plan with Documentation"
+            ]
         }
     ],
     "inputs": [
@@ -182,6 +317,24 @@
             "id": "userRole",
             "description": "User role (e.g., developer, user, admin)",
             "default": "developer",
+            "type": "promptString"
+        },
+        {
+            "id": "taskId",
+            "description": "Task ID (e.g., 3.1 for Task 3, subtask 1)",
+            "default": "1",
+            "type": "promptString"
+        },
+        {
+            "id": "storySlug",
+            "description": "Story slug (lowercase, hyphenated version of title)",
+            "default": "new-feature",
+            "type": "promptString"
+        },
+        {
+            "id": "changedFiles",
+            "description": "Comma-separated list of changed files (optional)",
+            "default": "",
             "type": "promptString"
         }
     ]

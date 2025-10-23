@@ -2,6 +2,7 @@
 
 # AI-powered implementation planning (framework version)
 # Extracted from EmberCare copilot-implementation-plan.sh
+# Enhanced with documentation verification integration
 
 set -e
 
@@ -82,15 +83,24 @@ post_process_plan() {
 - [ ] Update documentation as you build
 - [ ] Review code with team members
 
+### Documentation Verification (Required for Task Completion)
+- [ ] Run documentation currency check: ./core/scripts/task-completion-check.sh
+- [ ] Update any outdated documentation files
+- [ ] Verify all user-facing changes are documented
+- [ ] Confirm documentation is consistent with implementation
+
 ### After Implementation
 - [ ] Run full test suite
 - [ ] Update any affected documentation
+- [ ] Verify documentation verification checklist is complete
 - [ ] Create pull request with detailed description
 - [ ] Demo functionality to stakeholders
 
 EOF
 
     echo "📋 Implementation plan ready: $file"
+    echo "💡 Remember to run documentation verification before marking tasks complete:"
+    echo "   ./core/scripts/task-completion-check.sh [changed-files]"
 }
 
 # Main execution
@@ -112,6 +122,14 @@ main() {
     
     # Post-process results
     post_process_plan "$OUTPUT_FILE"
+    
+    # Check for documentation needs after implementation planning
+    echo "🔍 Checking documentation requirements for implementation plan..."
+    local docs_needed=$(check_documentation_needs "")
+    if [ $? -eq 0 ] && [ -n "$docs_needed" ]; then
+        echo "📝 Documentation update suggestions available"
+        suggest_documentation_updates ""
+    fi
     
     echo "✅ Implementation plan generated: $OUTPUT_FILE"
 }

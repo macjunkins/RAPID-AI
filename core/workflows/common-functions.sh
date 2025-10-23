@@ -475,3 +475,295 @@ suggest_documentation_updates() {
         done
     fi
 }
+
+# Check if task completion is allowed (documentation verification)
+check_task_completion_allowed() {
+    local changed_files="$1"
+    local force_completion="${2:-false}"
+    
+    if [ "$force_completion" = "true" ]; then
+        echo "⚠️ Force completion mode - skipping documentation verification"
+        return 0
+    fi
+    
+    echo "🔍 Verifying documentation currency before task completion..."
+    
+    # Check if documentation needs updating
+    local doc_issues=false
+    
+    if [ -n "$changed_files" ]; then
+        echo "📁 Checking changed files for documentation requirements:"
+        echo "$changed_files" | tr ',' '\n' | while read -r file; do
+            if [ -n "$file" ]; then
+                echo "  • $file"
+                local doc_files=$(get_documentation_files "$file")
+                if [ -n "$doc_files" ]; then
+                    echo "    📝 Requires documentation updates:"
+                    echo "$doc_files" | while read -r doc_file; do
+                        if [ -n "$doc_file" ]; then
+                            echo "      → $doc_file"
+                        fi
+                    done
+                    doc_issues=true
+                fi
+            fi
+        done
+    fi
+    
+    # Use git to check for uncommitted changes that might need documentation
+    if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+        local git_changes=$(git diff --name-only HEAD 2>/dev/null || true)
+        if [ -n "$git_changes" ]; then
+            echo "📝 Git changes detected that may need documentation:"
+            echo "$git_changes" | while read -r file; do
+                if [ -n "$file" ]; then
+                    local doc_files=$(get_documentation_files "$file")
+                    if [ -n "$doc_files" ]; then
+                        echo "  • $file → requires documentation updates"
+                        doc_issues=true
+                    fi
+                fi
+            done
+        fi
+    fi
+    
+    if [ "$doc_issues" = "true" ]; then
+        echo ""
+        echo "❌ Documentation verification failed!"
+        echo "📋 Documentation updates are required before task completion."
+        echo ""
+        echo "To complete this task:"
+        echo "1. Update the required documentation files listed above"
+        echo "2. Run documentation verification again"
+        echo "3. Or use --force to skip verification (not recommended)"
+        echo ""
+        return 1
+    else
+        echo "✅ Documentation verification passed - no updates required"
+        return 0
+    fi
+}
+
+# Comprehensive task completion check
+verify_task_completion() {
+    local changed_files="$1"
+    local force_completion="${2:-false}"
+    local task_name="${3:-current task}"
+    
+    echo "🎯 Starting task completion verification for: $task_name"
+    echo "=================================================="
+    
+    # Step 1: Documentation verification
+    if ! check_task_completion_allowed "$changed_files" "$force_completion"; then
+        echo "❌ Task completion blocked due to documentation requirements"
+        return 1
+    fi
+    
+    # Step 2: Basic file validation (if files specified)
+    if [ -n "$changed_files" ]; then
+        echo ""
+        echo "📁 Verifying changed files exist and are valid..."
+        local invalid_files=false
+        echo "$changed_files" | tr ',' '\n' | while read -r file; do
+            if [ -n "$file" ] && [ ! -f "$file" ]; then
+                echo "❌ File not found: $file"
+                invalid_files=true
+            fi
+        done
+        
+        if [ "$invalid_files" = "true" ]; then
+            echo "❌ Some specified files do not exist"
+            return 1
+        fi
+        echo "✅ All specified files are valid"
+    fi
+    
+    # Step 3: Git status check (if in git repository)
+    if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+        echo ""
+        echo "📝 Checking git repository status..."
+        
+        local uncommitted_changes=$(git diff --name-only HEAD 2>/dev/null | wc -l)
+        local staged_changes=$(git diff --cached --name-only 2>/dev/null | wc -l)
+        
+        if [ "$uncommitted_changes" -gt 0 ] || [ "$staged_changes" -gt 0 ]; then
+            echo "⚠️ Git repository has uncommitted changes:"
+            if [ "$staged_changes" -gt 0 ]; then
+                echo "  📋 Staged changes: $staged_changes files"
+            fi
+            if [ "$uncommitted_changes" -gt 0 ]; then
+                echo "  📝 Unstaged changes: $uncommitted_changes files"
+            fi
+            echo "💡 Consider committing changes before marking task complete"
+        else
+            echo "✅ Git repository is clean"
+        fi
+    fi
+    
+    echo ""
+    echo "✅ Task completion verification successful for: $task_name"
+    echo "🎉 Task is ready to be marked as complete!"
+    
+    return 0
+}
+
+# Documentation verification functions
+# Integration with documentation detection for task completion
+
+# Enhanced task completion with documentation verification
+enhanced_task_completion() {
+    local task_name="$1"
+    local story_file="$2"
+    local changes_made="$3"
+    
+    echo "🎯 Enhanced task completion with documentation verification"
+    echo "📋 Task: $task_name"
+    echo "📄 Story: $story_file"
+    
+    # Step 1: Run standard task completion verification
+    if ! verify_task_completion "$task_name"; then
+        echo "❌ Standard task completion verification failed"
+        return 1
+    fi
+    
+    # Step 2: Documentation verification
+    if ! verify_documentation_requirements "$changes_made"; then
+        echo "❌ Documentation verification failed"
+        echo "🚫 Task completion blocked until documentation is updated"
+        return 1
+    fi
+    
+    # Step 3: Update story file with enhanced completion information
+    if ! update_story_with_documentation_status "$story_file" "$task_name" "$changes_made"; then
+        echo "⚠️ Warning: Could not update story file with documentation status"
+        echo "💡 Please manually verify story file is updated with completion information"
+    fi
+    
+    echo ""
+    echo "✅ Enhanced task completion successful for: $task_name"
+    echo "📚 Documentation requirements verified"
+    echo "🎉 Task is ready for review!"
+    
+    return 0
+}
+
+# Verify documentation requirements for changes
+verify_documentation_requirements() {
+    local changes_made="$1"
+    
+    echo "📚 Verifying documentation requirements..."
+    
+    # Load documentation detection functions if available
+    if [ -f "core/scripts/doc-detection.sh" ]; then
+        source "core/scripts/doc-detection.sh"
+        
+        # Check if changes require documentation updates
+        local docs_needed
+        if [ -n "$changes_made" ]; then
+            docs_needed=$(check_documentation_needs "$changes_made")
+        else
+            docs_needed=$(check_documentation_needs "")
+        fi
+        
+        if [ $? -eq 0 ] && [ -n "$docs_needed" ]; then
+            echo "📝 Documentation updates may be required:"
+            echo "$docs_needed"
+            
+            # Check if documentation has been updated
+            if ! verify_documentation_currency "$changes_made"; then
+                echo "❌ Documentation currency verification failed"
+                return 1
+            fi
+        else
+            echo "✅ No documentation updates required for these changes"
+        fi
+    else
+        echo "⚠️ Documentation detection not available - skipping documentation verification"
+        echo "💡 Install doc-detection.sh for comprehensive documentation verification"
+    fi
+    
+    return 0
+}
+
+# Verify documentation currency
+verify_documentation_currency() {
+    local changes_made="$1"
+    
+    echo "🔍 Checking documentation currency..."
+    
+    # Basic git-based currency check
+    if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+        local doc_files_changed=$(git diff --name-only HEAD~1 2>/dev/null | grep -E '\.(md|txt|rst)$' | wc -l || echo 0)
+        local code_files_changed=$(git diff --name-only HEAD~1 2>/dev/null | grep -E '\.(js|ts|sh|json|yaml|yml)$' | wc -l || echo 0)
+        
+        if [ "$code_files_changed" -gt 0 ] && [ "$doc_files_changed" -eq 0 ]; then
+            echo "⚠️ Code files changed but no documentation files updated in recent commits"
+            echo "💡 Consider updating documentation to reflect code changes"
+            # Don't fail here - make it a warning for now
+        else
+            echo "✅ Documentation appears current with recent changes"
+        fi
+    else
+        echo "ℹ️ Git not available - cannot verify documentation currency automatically"
+    fi
+    
+    return 0
+}
+
+# Update story file with documentation status
+update_story_with_documentation_status() {
+    local story_file="$1"
+    local task_name="$2"
+    local changes_made="$3"
+    
+    if [ ! -f "$story_file" ]; then
+        echo "⚠️ Story file not found: $story_file"
+        return 1
+    fi
+    
+    # Create backup
+    cp "$story_file" "${story_file}.backup"
+    
+    # Add documentation verification status to Dev Agent Record
+    local doc_status="Documentation verification completed on $(date)"
+    
+    # Look for Dev Agent Record section
+    if grep -q "## Dev Agent Record" "$story_file"; then
+        # Add documentation status to existing section
+        if grep -q "### Debug Log References" "$story_file"; then
+            sed -i.tmp "/### Debug Log References/a\\
+- $doc_status" "$story_file"
+            rm -f "${story_file}.tmp"
+        else
+            # Add to end of Dev Agent Record section
+            sed -i.tmp "/## Dev Agent Record/a\\
+\\
+### Debug Log References\\
+- $doc_status" "$story_file"
+            rm -f "${story_file}.tmp"
+        fi
+    else
+        # Create Dev Agent Record section
+        echo "" >> "$story_file"
+        echo "## Dev Agent Record" >> "$story_file"
+        echo "" >> "$story_file"
+        echo "### Debug Log References" >> "$story_file"
+        echo "- $doc_status" >> "$story_file"
+    fi
+    
+    echo "✅ Story file updated with documentation verification status"
+    return 0
+}
+
+# Integration wrapper for legacy task completion
+legacy_task_completion_wrapper() {
+    local task_name="$1"
+    
+    # Call original task completion if documentation verification is disabled
+    if [ "${DOCUMENTATION_VERIFICATION:-true}" = "false" ]; then
+        verify_task_completion "$task_name"
+    else
+        # Call enhanced task completion with documentation verification
+        enhanced_task_completion "$task_name" "" ""
+    fi
+}
