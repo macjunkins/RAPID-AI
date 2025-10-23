@@ -12,7 +12,19 @@ TIMEOUT="${TIMEOUT:-120}"
 
 # Import framework functions
 SCRIPT_DIR="$(dirname "$0")"
-source "$SCRIPT_DIR/../workflows/common-functions.sh"
+
+# Validate environment before proceeding
+if ! source "$SCRIPT_DIR/../workflows/common-functions.sh" 2>/dev/null; then
+    echo "❌ Cannot load common functions from: $SCRIPT_DIR/../workflows/common-functions.sh"
+    echo "💡 Please ensure you're running RAPID-AI from the correct directory structure."
+    echo "📋 Expected: core/scripts/ and core/workflows/ directories should exist"
+    exit 1
+fi
+
+# Validate environment
+if ! validate_environment "$SCRIPT_DIR"; then
+    exit 1
+fi
 
 # Parse arguments
 EPIC=$1
