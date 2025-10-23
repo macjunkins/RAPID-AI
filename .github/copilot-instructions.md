@@ -88,6 +88,7 @@ workflows:
 - BMAD provides structured agent roles (dev, architect, pm, etc.) for AI-powered development
 - CLI scripts bridge BMAD methodology with AI tools: `npm run bmad:refresh`
 - Extract workflows/templates from `.bmad-core/` without branding
+- **Documentation-as-You-Go Workflow**: BMAD dev agent now enforces documentation verification before task completion
 
 ## Development Commands
 
@@ -134,7 +135,8 @@ Generated in `docs/discovery/story-{epic}-{story}-discovery.md` with:
 
 ### BMAD Integration Outputs
 - `.bmad-core/agents/` → Extracted agent definitions  
-- `.bmad-core/tasks/` → Reusable workflow tasks
+- `.bmad-core/tasks/` → Reusable workflow tasks (including documentation workflow)
+- `.bmad-core/checklists/` → Systematic validation checklists (including documentation currency)
 - `.bmad-core/templates/` → Document templates
 - `AGENTS.md` → Auto-generated agent summaries for Copilot consumption
 
@@ -168,6 +170,11 @@ Generated analysis must include:
 - Extract workflows/templates from `.bmad-core/` without BMAD branding
 - Maintain compatibility with existing BMAD structure during extraction
 - Focus on systematic SDLC processes rather than specific methodology
+- **Documentation Workflow Integration**: BMAD dev agent includes mandatory documentation verification gates
+  - `validate-documentation-currency.md` - Check if documentation is current with code changes
+  - `update-documentation.md` - Guide for updating specific documentation sections
+  - `documentation-completion-gate.md` - Prevent task completion without documentation verification
+  - `documentation-currency-checklist.md` - Systematic checklist for documentation validation
 
 ### EmberCare Backward Compatibility
 Framework extraction maintains 100% compatibility with existing EmberCare scripts - they become thin wrappers calling the framework.
