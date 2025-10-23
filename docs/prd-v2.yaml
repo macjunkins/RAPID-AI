@@ -1,0 +1,713 @@
+# RAPID-AI 2.0 - Structured Execution Framework PRD
+# Major architectural pivot from conversational workflows to execution-focused structured data
+
+product:
+  name: "RAPID-AI 2.0"
+  tagline: "Execution-focused AI development framework"
+  version: "2.0.0"
+
+  vision: |
+    Transform AI-assisted development from conversational overhead to deterministic execution.
+    Conversation for ideation and exploration. Structured data for implementation and execution.
+
+  philosophy:
+    core_principle: "Conversation doesn't scale for execution - structured data removes ambiguity"
+    use_cases:
+      ideation:
+        description: "Natural conversation for exploration, brainstorming, architectural decisions"
+        format: "Conversational AI (like this interaction)"
+        value: "High - teases out ideas, challenges assumptions, explores options"
+        token_cost: "High but worth it - this is creative work"
+      execution:
+        description: "Deterministic code generation from structured specifications"
+        format: "YAML/JSON input → Code output"
+        value: "Maximum efficiency - no interpretation, just implementation"
+        token_cost: "Minimal - 50-70% token savings vs conversational"
+
+  target_users:
+    - type: "Solo developers"
+      needs: ["Fast iteration", "Minimal token usage", "No AI conversation overhead"]
+    - type: "Small development teams"
+      needs: ["Repeatable workflows", "Consistent outputs", "Version-controlled specs"]
+    - type: "AI-augmented developers"
+      needs: ["Claude for reasoning", "CoPilot for speed", "Deterministic execution"]
+
+metadata:
+  created: "2025-10-23"
+  author: "John Junkins (macjunkins)"
+  status: "draft"
+  replaces: "docs/prd.md (v1.0 brownfield enhancement)"
+  reason_for_v2: |
+    Major course correction from conversational BMAD-style agents to execution-focused
+    structured workflows. V1.0 focused on incremental enhancement with markdown outputs.
+    V2.0 is a fundamental architectural pivot to YAML-first deterministic execution.
+
+problem_statement:
+  current_industry_antipattern: |
+    Developer: "Build user authentication"
+    AI: "Great! Can you tell me more about your requirements?"
+    Developer: "Email and password login"
+    AI: "Would you like OAuth integration too?"
+    ...
+    [15 messages later, 20K tokens burned]
+    AI: "Here's your code!"
+
+  token_inefficiency: |
+    Markdown-based workflows force AI to:
+    1. Parse natural language (500-800 tokens)
+    2. Interpret architectural terms (1K tokens)
+    3. Infer file structure from prose (800 tokens)
+    4. Generate code (2K tokens)
+    Total: ~4.3K tokens per story
+
+  rapid_ai_v1_limitations:
+    - conversational_overhead: "BMAD agents require back-and-forth dialogue"
+    - markdown_ambiguity: "AI must parse prose to extract structure"
+    - copilot_only: "Limited to CoPilot CLI - can't leverage Claude's reasoning"
+    - documentation_ceremony: "Doc-as-you-go in markdown adds friction without clear ROI"
+    - better-documentation_ceremony: "Users are developers who read code for a living. yaml is fine"
+
+solution_overview:
+  yaml_first_architecture: |
+    All AI inputs and outputs use structured YAML:
+    - PRD: Product requirements in queryable YAML structure
+    - Epics: Sharded epic files (docs/prd/epic-{n}.yaml)
+    - Stories: Individual story specs (docs/stories/{epic}-{story}-story.yaml)
+    - Architecture: Technical decisions in structured format
+
+  dual_ai_strategy:
+    claude_cli:
+      usage: "Discovery, analysis, architectural reasoning"
+      strength: "Superior reasoning and architectural thinking"
+      command: "claude -p 'prompt'"
+    copilot_cli:
+      usage: "Fast code generation, boilerplate, simple tasks"
+      strength: "Speed and simplicity"
+      command: "copilot -p 'prompt'"
+
+  execution_workflow:
+    ideation_phase:
+      mode: "Conversational"
+      example: "What should this feature do? How should I architect it?"
+      output: "High-level decisions documented in YAML"
+    analysis_phase:
+      mode: "Structured (Claude CLI)"
+      input: "Epic context + feature description"
+      output: "story.yaml (structured specification)"
+      token_cost: "Moderate (one-time analysis)"
+    implementation_phase:
+      mode: "Execution (no conversation)"
+      input: "story.yaml"
+      output: "Code files"
+      token_cost: "Minimal (deterministic)"
+
+# Epic and Story Structure
+
+epics:
+  - id: 1
+    title: "Structured YAML Workflow Foundation"
+    priority: "critical"
+    status: "planned"
+
+    description: |
+      Establish YAML-first architecture as foundation for all RAPID-AI workflows.
+      Replace markdown-based documents with structured, parseable YAML specifications
+      that enable deterministic AI execution without natural language interpretation.
+
+    goals:
+      - "Define YAML schemas for PRD, Epic, Story, Architecture documents"
+      - "Update core configuration to use .yaml extensions and YAML parsing"
+      - "Create validation scripts to ensure schema compliance"
+      - "Establish sharded YAML structure (docs/prd/, docs/stories/)"
+
+    success_criteria:
+      - "All new documents generated in YAML format"
+      - "Schema validation passes for all YAML files"
+      - "YAML files are queryable via yq/jq"
+      - "Git diffs show structured changes, not prose edits"
+
+    stories:
+      - id: 1
+        title: "Define YAML schemas for core documents"
+        priority: "critical"
+        estimated_effort: "2-3 hours"
+        description: |
+          Create JSON Schema or YAML Schema definitions for PRD, Epic, Story,
+          and Architecture documents. Schemas enable validation and ensure
+          AI-generated outputs conform to expected structure.
+        acceptance_criteria:
+          - "schemas/prd-schema.yaml defines product document structure"
+          - "schemas/epic-schema.yaml defines epic document structure"
+          - "schemas/story-schema.yaml defines story specification structure"
+          - "schemas/architecture-schema.yaml defines technical decisions structure"
+          - "Validation script (scripts/validate-yaml.sh) checks all YAML files"
+          - "VS Code YAML extension provides auto-completion from schemas"
+
+      - id: 2
+        title: "Update core configuration for YAML-first workflows"
+        priority: "critical"
+        estimated_effort: "1-2 hours"
+        description: |
+          Modify .bmad-core/core-config.yaml and .ai-workflow.yaml to use
+          YAML file extensions, YAML output formats, and YAML-specific
+          processing logic.
+        acceptance_criteria:
+          - ".bmad-core/core-config.yaml uses .yaml extensions (epicFilePattern: epic-{n}*.yaml)"
+          - ".ai-workflow.yaml sets output_format: yaml for all workflows"
+          - "Configuration specifies YAML schema paths for validation"
+          - "Existing EmberCare .md configs still work (backward compatibility check)"
+          - "Documentation explains YAML-first approach in core-config.yaml comments"
+
+      - id: 3
+        title: "Create sharded YAML directory structure"
+        priority: "high"
+        estimated_effort: "1 hour"
+        description: |
+          Establish directory structure for sharded YAML documents:
+          docs/prd/ for epics, docs/stories/ for stories, docs/architecture/
+          for architectural decisions. Update .gitignore and add README files.
+        acceptance_criteria:
+          - "docs/prd.yaml exists (product overview)"
+          - "docs/prd/ directory for epic-{n}.yaml files"
+          - "docs/stories/ directory for {epic}-{story}-story.yaml files"
+          - "docs/architecture.yaml exists (core architecture)"
+          - "docs/architecture/ directory for tech-stack.yaml, coding-standards.yaml, etc."
+          - "Each directory has README.md explaining structure and purpose"
+
+      - id: 4
+        title: "Implement YAML validation scripts"
+        priority: "high"
+        estimated_effort: "2 hours"
+        description: |
+          Create shell scripts that validate YAML files against schemas,
+          check for required fields, and ensure consistency across documents.
+          Integrate validation into VS Code tasks.
+        acceptance_criteria:
+          - "scripts/validate-yaml.sh validates all YAML files against schemas"
+          - "Validation reports missing required fields with helpful error messages"
+          - "VS Code task 'Validate YAML Documents' runs validation"
+          - "Git pre-commit hook (optional) validates YAML before commit"
+          - "Validation script returns 0 on success, 1 on failure with details"
+
+  - id: 2
+    title: "Claude CLI Integration for Superior Reasoning"
+    priority: "critical"
+    status: "planned"
+
+    description: |
+      Integrate Claude CLI alongside CoPilot CLI to leverage Claude's superior
+      reasoning capabilities for discovery, analysis, and architectural decisions.
+      CoPilot remains for fast code generation and simple tasks.
+
+    goals:
+      - "Add Claude CLI support to core/workflows/common-functions.sh"
+      - "Update AI prompts to generate YAML output instead of markdown"
+      - "Create dual-AI strategy: Claude for reasoning, CoPilot for speed"
+      - "Implement AI tool selection based on task type"
+
+    success_criteria:
+      - "Claude CLI works for story discovery (claude -p 'prompt')"
+      - "CoPilot CLI works for code generation (copilot -p 'prompt')"
+      - "AI outputs valid YAML conforming to schemas"
+      - "Token usage reduced 50-70% vs markdown workflows"
+      - "VS Code tasks can specify which AI tool to use"
+
+    stories:
+      - id: 1
+        title: "Add Claude CLI support to common-functions.sh"
+        priority: "critical"
+        estimated_effort: "2 hours"
+        description: |
+          Update run_ai_analysis() function in core/workflows/common-functions.sh
+          to support 'claude' as an AI tool option. Implement same pattern as
+          CoPilot CLI integration with timeout protection and error handling.
+        acceptance_criteria:
+          - "run_ai_analysis() accepts 'claude' as ai_tool parameter"
+          - "Claude CLI executed with: timeout ${timeout}s claude -p \"$prompt\""
+          - "check_ai_tool_availability('claude') verifies Claude CLI installed"
+          - "Error messages provide helpful Claude CLI installation guidance"
+          - "Timeout and progress indicators work same as CoPilot"
+          - "Fallback template created if Claude CLI fails"
+
+      - id: 2
+        title: "Create YAML-generating AI prompts"
+        priority: "critical"
+        estimated_effort: "3-4 hours"
+        description: |
+          Replace existing markdown-generating prompts with YAML-generating
+          prompts that output structured data. Prompts must specify exact
+          YAML structure expected and include schema validation instructions.
+        acceptance_criteria:
+          - "core/prompts/story-discovery.yaml-prompt generates valid story YAML"
+          - "Prompt includes schema definition inline for AI reference"
+          - "Prompt specifies required fields and data types"
+          - "AI output passes schema validation without manual editing"
+          - "Generated YAML includes all fields from story-schema.yaml"
+          - "Prompt tested with both Claude CLI and CoPilot CLI"
+
+      - id: 3
+        title: "Implement AI tool selection strategy"
+        priority: "high"
+        estimated_effort: "2 hours"
+        description: |
+          Create intelligent AI tool selection based on task type:
+          Claude for discovery/analysis (reasoning), CoPilot for implementation
+          (speed). Allow override via configuration or command-line flag.
+        acceptance_criteria:
+          - ".ai-workflow.yaml specifies ai_tool per workflow type"
+          - "Story analysis defaults to Claude (ai_tool: claude)"
+          - "Code generation defaults to CoPilot (ai_tool: copilot)"
+          - "VS Code tasks allow --ai-tool flag to override default"
+          - "Error message if selected tool not available, suggests alternative"
+
+      - id: 4
+        title: "Create token usage tracking and reporting"
+        priority: "medium"
+        estimated_effort: "2 hours"
+        description: |
+          Implement basic token usage tracking to measure YAML vs markdown
+          efficiency. Track tokens per story analysis and report savings.
+        acceptance_criteria:
+          - "Token count estimated for each AI analysis (input + output)"
+          - "Report saved to .ai/token-usage.log with timestamp and task type"
+          - "Summary command shows total tokens used and estimated cost"
+          - "Comparison report: YAML workflow vs markdown workflow token savings"
+
+  - id: 3
+    title: "VS Code Task Enhancement for YAML Workflows"
+    priority: "high"
+    status: "planned"
+
+    description: |
+      Update VS Code tasks to work seamlessly with YAML-first workflows.
+      Tasks should validate YAML, open YAML files in editor, and provide
+      helpful problem matchers for YAML syntax errors.
+
+    goals:
+      - "Update templates/vscode/tasks.json for YAML workflows"
+      - "Add YAML validation as pre-flight check for all tasks"
+      - "Create new tasks: 'Query YAML Documents', 'Validate Story YAML'"
+      - "Improve problem matchers to surface YAML errors in Problems panel"
+
+    success_criteria:
+      - "All AI workflow tasks output YAML files"
+      - "VS Code opens .yaml files after generation"
+      - "YAML syntax errors appear in Problems panel"
+      - "yq installed and available for YAML querying"
+      - "Task completion verified by schema validation"
+
+    stories:
+      - id: 1
+        title: "Update AI workflow tasks to output YAML"
+        priority: "critical"
+        estimated_effort: "2 hours"
+        description: |
+          Modify existing VS Code tasks (AI Workflow: Analyze Story,
+          Generate Implementation Plan, etc.) to generate YAML outputs
+          instead of markdown. Update output file paths and validation.
+        acceptance_criteria:
+          - "AI Workflow: Analyze Story outputs docs/stories/{epic}-{story}-story.yaml"
+          - "AI Workflow: Generate Implementation Plan outputs docs/plans/{epic}-{story}-plan.yaml"
+          - "Flutter Analysis outputs adapter-specific YAML"
+          - "Complete Story Setup runs YAML validation after generation"
+          - "Tasks open .yaml files in VS Code after completion"
+
+      - id: 2
+        title: "Create YAML validation and query tasks"
+        priority: "high"
+        estimated_effort: "1-2 hours"
+        description: |
+          Add new VS Code tasks for YAML validation, querying, and schema
+          checking. Enable developers to quickly validate YAML structure
+          and query documents without leaving VS Code.
+        acceptance_criteria:
+          - "Task: 'Validate All YAML Documents' runs schema validation"
+          - "Task: 'Query Stories' prompts for yq query and displays results"
+          - "Task: 'Show Epic Summary' displays epic YAML in formatted output"
+          - "Task: 'List Planned Stories' queries all stories with status=planned"
+          - "Problem matchers surface validation errors in Problems panel"
+
+      - id: 3
+        title: "Add YAML problem matchers for error surfacing"
+        priority: "medium"
+        estimated_effort: "1 hour"
+        description: |
+          Create VS Code problem matchers that detect YAML syntax errors,
+          schema validation failures, and missing required fields. Errors
+          should appear in Problems panel with file/line references.
+        acceptance_criteria:
+          - "Problem matcher detects YAML syntax errors (invalid indentation, etc.)"
+          - "Problem matcher detects schema validation failures (missing fields)"
+          - "Errors link to specific file and line number"
+          - "Clicking error in Problems panel opens file at error location"
+          - "Error messages are actionable (e.g., 'Missing required field: acceptance_criteria')"
+
+      - id: 4
+        title: "Create yq installation and verification task"
+        priority: "medium"
+        estimated_effort: "1 hour"
+        description: |
+          Add VS Code task that checks for yq installation and provides
+          installation instructions if missing. yq is required for YAML
+          querying and processing in VS Code tasks.
+        acceptance_criteria:
+          - "Task: 'Check Prerequisites' verifies yq installed"
+          - "If yq missing, provides installation commands for macOS/Linux/Windows"
+          - "Task verifies yq version and functionality"
+          - "Installation instructions use homebrew (macOS), apt (Linux), choco (Windows)"
+          - "Success message confirms yq available and ready for YAML workflows"
+
+  - id: 4
+    title: "Strip BMAD Overhead and Extract Useful Patterns"
+    priority: "medium"
+    status: "planned"
+
+    description: |
+      Analyze .bmad-core/ directory, extract genuinely useful workflow patterns,
+      and remove BMAD branding, persona system, and methodology ceremony.
+      Keep systematic checklists and templates that add value.
+
+    goals:
+      - "Identify valuable BMAD patterns worth preserving"
+      - "Remove agent persona system and conversational overhead"
+      - "Extract useful checklists (story-dod, quality validation)"
+      - "Convert useful templates to YAML format"
+      - "Update documentation to reflect RAPID-AI patterns, not BMAD"
+
+    success_criteria:
+      - ".bmad-core/ renamed to .rapid-patterns/ or removed entirely"
+      - "Useful checklists preserved in core/checklists/"
+      - "Agent system removed (no more /bmad-master command)"
+      - "Templates converted to YAML and moved to templates/"
+      - "All BMAD branding removed from code and docs"
+
+    stories:
+      - id: 1
+        title: "Audit BMAD content for useful patterns"
+        priority: "high"
+        estimated_effort: "2-3 hours"
+        description: |
+          Review all files in .bmad-core/ and categorize:
+          (1) Useful - checklists, templates, workflow patterns
+          (2) Overhead - agent personas, conversational scripts, branding
+          (3) Uncertain - need discussion or testing
+        acceptance_criteria:
+          - "Audit report created: docs/bmad-audit.yaml"
+          - "Report categorizes every file in .bmad-core/"
+          - "Useful patterns identified with rationale"
+          - "Overhead identified for removal"
+          - "Recommendations for each file (keep/modify/remove)"
+
+      - id: 2
+        title: "Remove BMAD agent system and personas"
+        priority: "high"
+        estimated_effort: "1-2 hours"
+        description: |
+          Remove .bmad-core/agents/ directory and all slash command integrations.
+          Remove /bmad-master and related conversational agent commands.
+          Update CLAUDE.md to remove BMAD agent references.
+        acceptance_criteria:
+          - ".bmad-core/agents/ directory removed"
+          - "SlashCommand tool references to BMad removed from CLAUDE.md"
+          - "AGENTS.md removed or archived"
+          - "npm run bmad:* scripts removed from package.json"
+          - "No references to 'BMad' or agent personas in active code"
+
+      - id: 3
+        title: "Extract and convert useful BMAD templates to YAML"
+        priority: "medium"
+        estimated_effort: "2-3 hours"
+        description: |
+          Identify useful templates (story-tmpl, architecture-tmpl, etc.),
+          convert to YAML format, and move to templates/ directory.
+          Remove BMAD-specific fields and branding.
+        acceptance_criteria:
+          - "templates/story-template.yaml created (from story-tmpl.yaml)"
+          - "templates/architecture-template.yaml created"
+          - "All BMAD branding removed from templates"
+          - "Templates conform to RAPID-AI YAML schemas"
+          - "Documentation explains how to use templates with rapid CLI"
+
+      - id: 4
+        title: "Preserve useful checklists in simplified format"
+        priority: "medium"
+        estimated_effort: "1-2 hours"
+        description: |
+          Keep genuinely useful checklists (story-dod, quality validation)
+          but remove BMAD methodology overhead. Convert to simple markdown
+          checklists without agent-specific instructions.
+        acceptance_criteria:
+          - "core/checklists/story-definition-of-done.md preserved and simplified"
+          - "core/checklists/quality-validation.md preserved and simplified"
+          - "All agent-specific instructions removed from checklists"
+          - "Checklists focus on practical validation, not methodology compliance"
+          - "Documentation explains when and how to use each checklist"
+
+# Technical Requirements
+
+technical_requirements:
+  architecture:
+    yaml_processing:
+      - requirement: "All shell scripts must parse YAML using yq or equivalent"
+      - rationale: "Deterministic YAML parsing prevents natural language ambiguity"
+      - validation: "yq installed and available in PATH"
+
+    ai_abstraction:
+      - requirement: "AI tool abstraction supports both Claude CLI and CoPilot CLI"
+      - rationale: "Dual-AI strategy leverages best of both tools"
+      - validation: "run_ai_analysis() works with tool='claude' and tool='copilot'"
+
+    schema_validation:
+      - requirement: "All YAML outputs validated against JSON Schema or YAML Schema"
+      - rationale: "Schema validation ensures AI generates correct structure"
+      - validation: "Validation script returns 0 for valid YAML, 1 with errors"
+
+    backward_compatibility:
+      - requirement: "EmberCare Flutter adapter continues working without modification"
+      - rationale: "Production usage must not break during RAPID-AI 2.0 transition"
+      - validation: "EmberCare tests pass with existing .md configuration"
+
+  configuration:
+    yaml_first_defaults:
+      - setting: "output_format: yaml"
+        location: ".ai-workflow.yaml"
+        description: "Default all AI outputs to YAML format"
+
+      - setting: "epicFilePattern: epic-{n}*.yaml"
+        location: ".bmad-core/core-config.yaml"
+        description: "Use .yaml extension for epic files"
+
+      - setting: "storyFilePattern: {epic}-{story}-story.yaml"
+        location: ".ai-workflow.yaml"
+        description: "Use .yaml extension for story files"
+
+    ai_tool_selection:
+      - setting: "ai_tools: [claude, copilot]"
+        location: ".ai-workflow.yaml"
+        description: "List available AI tools in priority order"
+
+      - setting: "workflows.story_analysis.ai_tool: claude"
+        location: ".ai-workflow.yaml"
+        description: "Use Claude for story analysis (reasoning)"
+
+      - setting: "workflows.implementation.ai_tool: copilot"
+        location: ".ai-workflow.yaml"
+        description: "Use CoPilot for implementation (speed)"
+
+  validation:
+    schema_definitions:
+      - schema: "schemas/prd-schema.yaml"
+        validates: "docs/prd.yaml and docs/prd/epic-*.yaml"
+
+      - schema: "schemas/story-schema.yaml"
+        validates: "docs/stories/*-story.yaml"
+
+      - schema: "schemas/architecture-schema.yaml"
+        validates: "docs/architecture.yaml and docs/architecture/*.yaml"
+
+    validation_timing:
+      - when: "After AI generation"
+        what: "Validate AI output against schema before saving"
+        failure_action: "Regenerate with schema hints in prompt"
+
+      - when: "Before git commit"
+        what: "Validate all YAML files in commit"
+        failure_action: "Block commit with validation error details"
+
+      - when: "On VS Code task execution"
+        what: "Pre-flight validation of existing YAML files"
+        failure_action: "Display errors in Problems panel"
+
+# Success Metrics
+
+success_metrics:
+  token_efficiency:
+    metric: "Token usage per story analysis"
+    baseline: "4,300 tokens (markdown workflow)"
+    target: "1,500-2,000 tokens (YAML workflow)"
+    measurement: "Track via .ai/token-usage.log"
+
+  execution_speed:
+    metric: "Time from story input to code output"
+    baseline: "15-30 minutes (conversational)"
+    target: "5-10 minutes (structured)"
+    measurement: "VS Code task duration tracking"
+
+  ai_accuracy:
+    metric: "Percentage of AI outputs that pass schema validation"
+    baseline: "N/A (no validation in v1.0)"
+    target: "95%+ first-pass validation"
+    measurement: "Validation script success rate"
+
+  developer_experience:
+    metric: "Number of back-and-forth messages per story"
+    baseline: "8-12 messages (conversational BMAD)"
+    target: "0-1 messages (structured execution)"
+    measurement: "Manual tracking during EmberCare usage"
+
+# Migration and Rollout
+
+migration_strategy:
+  approach: "Parallel development - RAPID-AI 2.0 developed independently"
+
+  phases:
+    - phase: 1
+      name: "RAPID-AI 2.0 development"
+      duration: "2-3 weeks"
+      activities:
+        - "Implement epics 1-3 in RAPID-AI repository"
+        - "Test YAML workflows without affecting EmberCare"
+        - "Document new patterns and usage"
+
+    - phase: 2
+      name: "EmberCare pilot"
+      duration: "1 week"
+      activities:
+        - "Convert 1-2 EmberCare stories to YAML workflow"
+        - "Measure token savings and speed improvements"
+        - "Validate schema compliance and AI accuracy"
+
+    - phase: 3
+      name: "Full EmberCare adoption"
+      duration: "Ongoing"
+      activities:
+        - "Migrate remaining EmberCare stories to YAML"
+        - "Deprecate markdown workflows"
+        - "Document lessons learned"
+
+  rollback_plan:
+    trigger: "If YAML workflows fail to deliver 40%+ token savings"
+    action: "Maintain markdown support alongside YAML"
+    fallback: "Allow mixed YAML/markdown projects during transition"
+
+# Dependencies and Prerequisites
+
+dependencies:
+  external_tools:
+    - tool: "yq"
+      purpose: "YAML processing and querying"
+      installation: "brew install yq (macOS), apt install yq (Linux)"
+      validation: "yq --version returns 4.x+"
+
+    - tool: "Claude CLI"
+      purpose: "Superior reasoning for discovery and analysis"
+      installation: "Included in Claude subscription via claude command"
+      validation: "claude --version returns valid version"
+
+    - tool: "CoPilot CLI"
+      purpose: "Fast code generation"
+      installation: "gh extension install github/gh-copilot"
+      validation: "copilot --version returns valid version"
+
+  internal_components:
+    - component: "core/workflows/common-functions.sh"
+      requirement: "run_ai_analysis() updated for Claude CLI"
+      status: "pending"
+
+    - component: "schemas/*.yaml"
+      requirement: "Schema definitions created and tested"
+      status: "pending"
+
+    - component: "templates/vscode/tasks.json"
+      requirement: "Tasks updated for YAML workflows"
+      status: "pending"
+
+# Risks and Mitigation
+
+risks:
+  - risk: "AI fails to generate valid YAML structure"
+    impact: "High - blocks entire workflow"
+    probability: "Medium"
+    mitigation: |
+      - Include schema definition inline in AI prompts
+      - Implement iterative validation with hints
+      - Fallback to template-based YAML generation
+      - Test with both Claude and CoPilot to identify which works better
+
+  - risk: "YAML is harder to read/edit than markdown"
+    impact: "Medium - developer experience suffers"
+    probability: "Low"
+    mitigation: |
+      - VS Code YAML extension provides auto-completion
+      - Schema validation catches errors during editing
+      - Optional markdown generation for human review
+      - Focus on querying YAML, not manual editing
+
+  - risk: "Claude CLI subscription required adds cost"
+    impact: "Medium - adoption barrier"
+    probability: "High"
+    mitigation: |
+      - CoPilot remains fully functional as fallback
+      - Document cost/benefit of Claude subscription
+      - Allow mixed AI usage (Claude for discovery, CoPilot for rest)
+
+  - risk: "EmberCare backward compatibility breaks"
+    impact: "Critical - production app affected"
+    probability: "Low"
+    mitigation: |
+      - Maintain markdown support during transition
+      - Test EmberCare compatibility before each commit
+      - Feature flag for YAML vs markdown workflows
+      - Rollback plan documented and tested
+
+# Open Questions
+
+open_questions:
+  - question: "Should we auto-generate markdown from YAML for GitHub readability?"
+    context: "YAML is machine-readable, markdown is human-readable on GitHub"
+    options:
+      - option: "Generate both .yaml and .md from same AI output"
+        pros: ["Best of both worlds", "GitHub previews work"]
+        cons: ["Sync issues if manually edited", "Extra files"]
+      - option: "YAML only, no markdown generation"
+        pros: ["Single source of truth", "No sync issues"]
+        cons: ["GitHub preview shows raw YAML", "Less readable"]
+      - option: "YAML primary, markdown on-demand"
+        pros: ["YAML for AI, markdown when needed", "Explicit generation"]
+        cons: ["Extra step for markdown", "Possible to forget"]
+    recommendation: "Start with YAML-only, add markdown generation if users request it"
+
+  - question: "How to handle documentation workflow features in YAML-first world?"
+    context: "V1.0 added doc-detection and verification - keep or remove?"
+    options:
+      - option: "Remove documentation workflow entirely"
+        pros: ["Reduces ceremony", "Simpler codebase"]
+        cons: ["Loses systematic doc verification"]
+      - option: "Keep but simplify to YAML-based tracking"
+        pros: ["Documentation currency still valuable", "Adapts to YAML"]
+        cons: ["Additional complexity"]
+    recommendation: "Remove for MVP, revisit after YAML workflows proven"
+
+  - question: "Should RAPID-AI 2.0 break EmberCare compatibility for clean start?"
+    context: "EmberCare uses markdown workflows - migrate or maintain parallel?"
+    options:
+      - option: "Break compatibility - RAPID-AI 2.0 is YAML-only"
+        pros: ["Clean architecture", "No legacy code"]
+        cons: ["EmberCare must migrate", "Risk of breaking production"]
+      - option: "Maintain parallel markdown support during transition"
+        pros: ["EmberCare unaffected", "Gradual migration"]
+        cons: ["Code complexity", "Two workflows to maintain"]
+    recommendation: "Maintain parallel support with feature flag - migrate EmberCare incrementally"
+
+# Next Steps
+
+next_steps:
+  immediate:
+    - "Review and approve PRD v2.0"
+    - "Answer open questions above"
+    - "Create Epic 1, Story 1 YAML file as working example"
+
+  epic_1_kickoff:
+    - "Define YAML schemas for PRD, Epic, Story, Architecture"
+    - "Validate schemas with example YAML documents"
+    - "Update core configuration files for YAML-first"
+
+  epic_2_kickoff:
+    - "Implement Claude CLI integration in common-functions.sh"
+    - "Create YAML-generating prompts"
+    - "Test token savings vs markdown workflows"
+
+  epic_3_kickoff:
+    - "Update VS Code tasks for YAML outputs"
+    - "Add YAML validation and query tasks"
+    - "Test complete workflow: VS Code task → YAML output → validation"

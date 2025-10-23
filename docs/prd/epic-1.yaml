@@ -1,0 +1,250 @@
+epic:
+  id: 1
+  title: "Structured YAML Workflow Foundation"
+  priority: "critical"
+  status: "in_progress"
+
+  description: |
+    Establish YAML-first architecture as foundation for all RAPID-AI workflows.
+    Replace markdown-based documents with structured, parseable YAML specifications
+    that enable deterministic AI execution without natural language interpretation.
+
+    CRITICAL: This epic focuses on creating WORKING, TESTABLE components first.
+    Each story must produce VS Code tasks that work in RAPID-AI repository for
+    immediate manual testing and dog-fooding.
+
+  goals:
+    - "Create working VS Code tasks for immediate manual testing"
+    - "Generate story YAML from epic context using Claude CLI"
+    - "Define YAML schemas for validation"
+    - "Establish sharded YAML structure (docs/prd/, docs/stories/)"
+    - "Dog-food RAPID-AI during its own development"
+
+  success_criteria:
+    - "VS Code task 'RAPID: Generate Story from Epic' works and produces valid YAML"
+    - "Generated story YAML includes all required fields"
+    - "Claude CLI integration functional for story generation"
+    - "Manual testing workflow established - find bugs during development"
+    - "Each completed story adds working capability to RAPID-AI"
+
+  documentation:
+    updated: "2025-10-23"
+    status: "current"
+    notes: |
+      Epic-level documentation tracking only. Individual stories do not require
+      documentation verification. Epic completion requires:
+      - README.md update explaining YAML workflow
+      - CLAUDE.md update with execution-focused philosophy
+      - Examples of generated YAML in docs/examples/
+
+  stories:
+    - id: 1
+      title: "Generate Story YAML from Epic Context"
+      priority: "critical"
+      status: "in_progress"
+      estimated_effort: "3-4 hours"
+
+      rationale: |
+        IMMEDIATE VALUE: This is the story we need RIGHT NOW to generate stories
+        for RAPID-AI development. By building this first, we can:
+        1. Test Claude CLI integration immediately
+        2. Generate story specs for remaining Epic 1 stories
+        3. Find bugs in real usage, not hypothetical scenarios
+        4. Dog-food RAPID-AI during its own development
+
+        This story creates the foundation for all future AI-powered story generation.
+
+      description: |
+        Create a working VS Code task that takes epic context and generates a
+        structured story YAML file using Claude CLI. The task must work in the
+        RAPID-AI repository TODAY so it can be used to generate remaining stories.
+
+        Workflow:
+        1. User runs VS Code task "RAPID: Generate Story from Epic"
+        2. Inputs: Epic ID, Story ID, Story Title
+        3. Claude CLI reads epic YAML context
+        4. Claude CLI generates structured story YAML
+        5. Output saved to docs/stories/{epic}-{story}-story.yaml
+        6. File opens in VS Code for review
+
+      acceptance_criteria:
+        - "VS Code task 'RAPID: Generate Story from Epic' exists in templates/vscode/tasks.json"
+        - "Task prompts for epic_id, story_id, and story_title"
+        - "Task calls new script: core/scripts/generate-story-yaml.sh"
+        - "Script reads docs/prd/epic-{epic_id}.yaml for context"
+        - "Script calls Claude CLI with YAML-generating prompt"
+        - "Generated YAML includes: id, title, priority, description, acceptance_criteria, technical_notes"
+        - "Output file: docs/stories/{epic}-{story}-story.yaml"
+        - "Generated YAML is valid (can be parsed by yq)"
+        - "Task completes in under 60 seconds"
+        - "Error handling: missing epic file, Claude CLI unavailable, invalid YAML output"
+
+      technical_notes:
+        - "Use Claude CLI not CoPilot - we need reasoning for story analysis"
+        - "Prompt must include epic YAML inline so Claude has full context"
+        - "Generate YAML directly - no markdown conversion needed"
+        - "Include story schema definition in prompt so Claude knows structure"
+        - "Timeout: 60 seconds (Claude is fast for single story generation)"
+
+      implementation_files:
+        create:
+          - path: "core/scripts/generate-story-yaml.sh"
+            purpose: "Shell script that orchestrates story generation workflow"
+          - path: "core/prompts/story-generation-prompt.txt"
+            purpose: "Claude prompt template for YAML story generation"
+        modify:
+          - path: "templates/vscode/tasks.json"
+            changes: "Add 'RAPID: Generate Story from Epic' task"
+          - path: "core/workflows/common-functions.sh"
+            changes: "Ensure run_ai_analysis() supports Claude CLI (from earlier work)"
+
+      testing_approach:
+        manual_testing:
+          - "Test 1: Generate Story 1.2 from Epic 1 context"
+          - "Test 2: Verify generated YAML is valid (yq eval docs/stories/1-2-story.yaml)"
+          - "Test 3: Test error handling - invalid epic ID"
+          - "Test 4: Test error handling - Claude CLI not available"
+          - "Test 5: Use generated story YAML to implement Story 1.2"
+
+        success_validation:
+          - "Generated YAML parses without errors"
+          - "All required fields present in output"
+          - "Story content is contextually relevant to epic"
+          - "Can immediately use generated YAML for development"
+
+    - id: 2
+      title: "Define Story YAML Schema and Validation"
+      priority: "high"
+      status: "planned"
+      estimated_effort: "2-3 hours"
+      description: |
+        Create JSON Schema definition for story YAML files and validation script.
+        This ensures AI-generated stories conform to expected structure.
+      acceptance_criteria:
+        - "schemas/story-schema.yaml defines story structure"
+        - "Validation script validates story YAML against schema"
+        - "VS Code task 'RAPID: Validate Story YAML' runs validation"
+        - "Schema includes all fields from Story 1.1 output"
+
+    - id: 3
+      title: "Create Epic YAML Schema and Directory Structure"
+      priority: "high"
+      status: "planned"
+      estimated_effort: "2 hours"
+      description: |
+        Define schema for epic YAML files and establish sharded directory structure.
+        Update core configuration to use YAML extensions.
+      acceptance_criteria:
+        - "schemas/epic-schema.yaml defines epic structure"
+        - "docs/prd/ directory exists for epic YAML files"
+        - ".bmad-core/core-config.yaml uses epicFilePattern: epic-{n}*.yaml"
+        - "README.md in docs/prd/ explains structure"
+
+    - id: 4
+      title: "Create Working VS Code Task Suite for Manual Testing"
+      priority: "high"
+      status: "planned"
+      estimated_effort: "3 hours"
+      description: |
+        Create comprehensive VS Code task suite for testing RAPID-AI features
+        during development. Tasks must work in RAPID-AI repository immediately.
+      acceptance_criteria:
+        - "Task: 'RAPID: Test Claude CLI' - verify Claude CLI works"
+        - "Task: 'RAPID: Validate All YAML' - run schema validation"
+        - "Task: 'RAPID: Query Stories' - use yq to query story files"
+        - "Task: 'RAPID: Full Story Generation Test' - end-to-end test"
+        - "All tasks include helpful error messages and next steps"
+
+    - id: 5
+      title: "Implement Token Usage Tracking for YAML vs Markdown Comparison"
+      priority: "medium"
+      status: "planned"
+      estimated_effort: "2 hours"
+      description: |
+        Track token usage for YAML generation to measure efficiency gains
+        vs markdown approach. Prove the 50-70% token savings hypothesis.
+      acceptance_criteria:
+        - "Token count logged to .ai/token-usage.log after each generation"
+        - "Log includes: timestamp, task type, tokens, AI tool used"
+        - "VS Code task 'RAPID: Show Token Usage' displays summary"
+        - "Comparison calculation: YAML tokens vs estimated markdown tokens"
+
+  technical_requirements:
+    prerequisites:
+      - tool: "Claude CLI"
+        command: "claude --version"
+        required: true
+        purpose: "Superior reasoning for story generation"
+
+      - tool: "yq"
+        command: "yq --version"
+        required: true
+        purpose: "YAML parsing and validation"
+
+      - tool: "jq"
+        command: "jq --version"
+        required: false
+        purpose: "JSON processing (optional)"
+
+    configuration_changes:
+      - file: ".bmad-core/core-config.yaml"
+        changes:
+          - "epicFilePattern: epic-{n}*.yaml (change from .md)"
+          - "devStoryLocation: docs/stories (already correct)"
+
+      - file: ".ai-workflow.yaml"
+        changes:
+          - "workflows.story_analysis.ai_tool: claude"
+          - "workflows.story_analysis.output_format: yaml"
+          - "workflows.story_analysis.outputs: ['docs/stories/{epic}-{story}-story.yaml']"
+
+    file_structure:
+      - "docs/prd.yaml - Product overview"
+      - "docs/prd/epic-1.yaml - This file"
+      - "docs/prd/epic-2.yaml - Epic 2 definition"
+      - "docs/stories/1-1-story.yaml - Story 1.1 spec"
+      - "docs/stories/1-2-story.yaml - Story 1.2 spec"
+      - "schemas/story-schema.yaml - Story validation schema"
+      - "schemas/epic-schema.yaml - Epic validation schema"
+
+  risk_assessment:
+    - risk: "Claude CLI might not generate valid YAML structure"
+      impact: "High - blocks entire workflow"
+      mitigation: |
+        - Include schema definition inline in prompt
+        - Test with multiple story variations
+        - Implement validation retry with schema hints
+        - Fallback to template-based YAML if AI fails
+
+    - risk: "Manual testing might miss edge cases"
+      impact: "Medium - bugs discovered later in EmberCare usage"
+      mitigation: |
+        - Test with diverse story types (feature, bug, enhancement)
+        - Validate against epic context accuracy
+        - Use generated stories for actual RAPID-AI development
+        - Document bugs found during dog-fooding
+
+    - risk: "YAML might be harder to read/edit than markdown"
+      impact: "Low - developer experience concern"
+      mitigation: |
+        - VS Code YAML extension provides syntax highlighting
+        - Schema validation helps during editing
+        - Focus on AI consumption, not manual editing
+        - Can add markdown generation later if needed
+
+  next_steps:
+    immediate:
+      - "Complete Story 1.1: Generate Story YAML from Epic Context"
+      - "Test Story 1.1 by generating Story 1.2 YAML"
+      - "Use generated Story 1.2 to implement schema validation"
+
+    after_story_1_1:
+      - "Generate Story 1.3, 1.4, 1.5 YAML using working task"
+      - "Implement stories incrementally, testing each"
+      - "Document bugs and improvements as discovered"
+
+    epic_completion:
+      - "All 5 stories completed and tested"
+      - "Epic-level documentation updated"
+      - "Token usage data collected and analyzed"
+      - "Ready to proceed to Epic 2: Claude CLI Integration"

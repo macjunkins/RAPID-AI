@@ -1,0 +1,103 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "RAPID: Generate Story from Epic",
+            "detail": "Generate story YAML from epic context using Claude CLI - IMMEDIATE VALUE",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/core/scripts/generate-story-yaml.sh",
+            "args": [
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "RAPID: Test Claude CLI",
+            "detail": "Verify Claude CLI is installed and working",
+            "type": "shell",
+            "command": "claude",
+            "args": ["--version"],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "RAPID: Validate YAML Files",
+            "detail": "Validate all YAML files in docs/ directory",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "for file in docs/**/*.yaml; do echo \"Validating $file...\"; yq eval . \"$file\" > /dev/null && echo \"✅ $file valid\" || echo \"❌ $file invalid\"; done"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "RAPID: Query All Stories",
+            "detail": "List all stories with status using yq",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "for file in docs/stories/*.yaml; do echo \"Story: $(yq eval '.story.id' \"$file\") - $(yq eval '.story.title' \"$file\") [$(yq eval '.story.status' \"$file\")]\"; done"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "RAPID: Show Epic Summary",
+            "detail": "Display epic summary with story count",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "yq eval '.epic | \"Epic \" + (.id | tostring) + \": \" + .title + \" (\" + .status + \")\\nStories: \" + (.stories | length | tostring)' docs/prd/epic-${input:epic}.yaml"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "epic",
+            "description": "Epic number",
+            "default": "1",
+            "type": "promptString"
+        },
+        {
+            "id": "story",
+            "description": "Story number",
+            "default": "1",
+            "type": "promptString"
+        },
+        {
+            "id": "title",
+            "description": "Story title",
+            "default": "New Story",
+            "type": "promptString"
+        }
+    ]
+}

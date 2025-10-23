@@ -1,0 +1,272 @@
+story:
+  id: "1.1"
+  epic_id: 1
+  title: "Generate Story YAML from Epic Context"
+  priority: "critical"
+  status: "in_progress"
+  created: "2025-10-23"
+  updated: "2025-10-23"
+
+  metadata:
+    estimated_effort: "3-4 hours"
+    actual_effort: null
+    assigned_to: "macjunkins"
+    tags: ["yaml-foundation", "manual-testing", "immediate-value"]
+
+  rationale: |
+    IMMEDIATE VALUE STORY: This creates the workflow we need RIGHT NOW to generate
+    stories for RAPID-AI development. By building this first, we establish:
+
+    1. Working VS Code task for immediate manual testing
+    2. Claude CLI integration foundation
+    3. Dog-fooding capability - RAPID-AI builds itself
+    4. Real-world bug discovery during development
+
+    This is the bootstrap story - it enables all subsequent story generation.
+
+  description: |
+    Create a working VS Code task that takes epic context and generates a structured
+    story YAML file using Claude CLI. The task must work in the RAPID-AI repository
+    TODAY so it can be used to generate remaining stories for Epic 1 and beyond.
+
+    User Workflow:
+    1. Open VS Code Command Palette (Cmd+Shift+P)
+    2. Run task "RAPID: Generate Story from Epic"
+    3. Enter epic ID (e.g., "1")
+    4. Enter story ID (e.g., "2")
+    5. Enter story title (e.g., "Define Story YAML Schema")
+    6. Script reads docs/prd/epic-1.yaml for context
+    7. Claude CLI generates structured story YAML
+    8. Output saved to docs/stories/1-2-story.yaml
+    9. File opens in VS Code for review and use
+
+  acceptance_criteria:
+    - criteria: "VS Code task 'RAPID: Generate Story from Epic' exists in templates/vscode/tasks.json"
+      validation: "Task appears in VS Code task list"
+
+    - criteria: "Task prompts for epic_id, story_id, and story_title using VS Code input variables"
+      validation: "Input prompts appear when task runs"
+
+    - criteria: "Task calls new script: core/scripts/generate-story-yaml.sh"
+      validation: "Script executes without errors"
+
+    - criteria: "Script reads docs/prd/epic-{epic_id}.yaml for context"
+      validation: "Epic context included in Claude prompt"
+
+    - criteria: "Script calls Claude CLI with YAML-generating prompt"
+      validation: "Claude CLI command executes successfully"
+
+    - criteria: "Generated YAML includes required fields: id, title, priority, description, acceptance_criteria, technical_notes"
+      validation: "All fields present in output file"
+
+    - criteria: "Output file saved to docs/stories/{epic}-{story}-story.yaml"
+      validation: "File created at correct path"
+
+    - criteria: "Generated YAML is valid and parseable by yq"
+      validation: "yq eval docs/stories/{epic}-{story}-story.yaml succeeds"
+
+    - criteria: "Task completes in under 60 seconds"
+      validation: "Timed execution completes within timeout"
+
+    - criteria: "Error handling works: missing epic file, Claude CLI unavailable, invalid YAML output"
+      validation: "Helpful error messages displayed for each failure mode"
+
+  technical_notes:
+    ai_tool_selection: |
+      Use Claude CLI (not CoPilot) because:
+      - Superior reasoning for story analysis and generation
+      - Better understanding of epic context
+      - More accurate structured YAML output
+      - Tested and proven in this conversation
+
+    prompt_design: |
+      The Claude prompt must include:
+      1. Epic YAML context inline (full epic-{id}.yaml content)
+      2. Story schema definition so Claude knows structure
+      3. Specific instructions: "Generate YAML only, no markdown"
+      4. Required fields specification
+      5. Example output format
+
+    yaml_structure: |
+      Generated story YAML must follow this structure:
+      - story.id (string)
+      - story.epic_id (number)
+      - story.title (string)
+      - story.priority (string: critical|high|medium|low)
+      - story.status (string: planned|in_progress|completed)
+      - story.description (string, multiline)
+      - story.acceptance_criteria (array of objects with criteria/validation)
+      - story.technical_notes (object with relevant technical details)
+      - story.implementation_files (object with create/modify arrays)
+
+    timeout_configuration: |
+      Set timeout to 60 seconds:
+      - Claude is fast for single story generation (10-20 seconds typical)
+      - 60 seconds allows for occasional API slowness
+      - Prevents hanging if Claude CLI has issues
+
+    error_handling: |
+      Handle these failure modes:
+      1. Epic file not found → helpful error with path
+      2. Claude CLI not installed → installation instructions
+      3. Claude CLI timeout → retry suggestion
+      4. Invalid YAML output → show validation errors
+      5. Network issues → check connection message
+
+  implementation_files:
+    create:
+      - path: "core/scripts/generate-story-yaml.sh"
+        purpose: "Main script that orchestrates story generation workflow"
+        details: |
+          Responsibilities:
+          - Parse command-line arguments (epic_id, story_id, story_title)
+          - Read epic YAML file for context
+          - Build Claude prompt with epic context + schema
+          - Call Claude CLI via run_ai_analysis()
+          - Validate generated YAML
+          - Save to docs/stories/{epic}-{story}-story.yaml
+          - Open file in VS Code if available
+
+      - path: "core/prompts/story-generation-prompt.txt"
+        purpose: "Claude prompt template for YAML story generation"
+        details: |
+          Prompt structure:
+          - Role: "You are a story specification generator"
+          - Context: Epic YAML content
+          - Task: "Generate story YAML for: {story_title}"
+          - Schema: Story YAML structure definition
+          - Format: "Output valid YAML only, no markdown fences"
+          - Example: Sample story YAML
+
+    modify:
+      - path: "templates/vscode/tasks.json"
+        changes: |
+          Add new task:
+          {
+            "label": "RAPID: Generate Story from Epic",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/generate-story-yaml.sh",
+            "args": ["${input:epic}", "${input:story}", "${input:title}"],
+            "problemMatcher": [],
+            "presentation": {
+              "reveal": "always",
+              "panel": "new"
+            }
+          }
+
+          Add input variables:
+          - epic (prompt: "Epic ID")
+          - story (prompt: "Story ID")
+          - title (prompt: "Story Title")
+
+      - path: "core/workflows/common-functions.sh"
+        changes: |
+          Ensure run_ai_analysis() supports Claude CLI:
+          - Add 'claude' case to AI tool selection
+          - Command: timeout ${timeout}s claude -p "$prompt"
+          - Error handling for Claude CLI not found
+          - This was implemented in earlier conversation
+
+  testing_approach:
+    manual_tests:
+      - test: "Generate Story 1.2 from Epic 1 context"
+        steps:
+          - "Run VS Code task 'RAPID: Generate Story from Epic'"
+          - "Enter epic: 1, story: 2, title: 'Define Story YAML Schema'"
+          - "Verify docs/stories/1-2-story.yaml created"
+          - "Verify YAML is valid: yq eval docs/stories/1-2-story.yaml"
+          - "Review content - does it match Epic 1 context?"
+        expected: "Valid story YAML generated with all required fields"
+
+      - test: "Verify generated YAML is parseable"
+        steps:
+          - "Run: yq eval docs/stories/1-2-story.yaml"
+          - "Check for syntax errors"
+        expected: "No YAML parsing errors"
+
+      - test: "Test error handling - invalid epic ID"
+        steps:
+          - "Run task with epic: 99 (doesn't exist)"
+          - "Verify helpful error message"
+        expected: "Error: Epic file not found: docs/prd/epic-99.yaml"
+
+      - test: "Test error handling - Claude CLI not available"
+        steps:
+          - "Temporarily rename claude CLI"
+          - "Run task"
+          - "Verify installation instructions shown"
+        expected: "Helpful error with Claude CLI installation guidance"
+
+      - test: "Use generated story YAML for development"
+        steps:
+          - "Generate Story 1.2 YAML"
+          - "Use 1-2-story.yaml to implement schema validation"
+          - "Validate that generated story is accurate and actionable"
+        expected: "Generated story provides clear implementation guidance"
+
+    success_validation:
+      - "Generated YAML parses without errors (yq validation passes)"
+      - "All required fields present in output"
+      - "Story content is contextually relevant to epic"
+      - "Can immediately use generated YAML for development"
+      - "Task completes in under 60 seconds"
+      - "Error messages are helpful and actionable"
+
+  dependencies:
+    required:
+      - dependency: "Claude CLI installed and authenticated"
+        validation: "claude --version returns valid version"
+        installation: "Included in Claude subscription"
+
+      - dependency: "yq installed for YAML validation"
+        validation: "yq --version returns 4.x+"
+        installation: "brew install yq (macOS)"
+
+      - dependency: "docs/prd/epic-1.yaml exists"
+        validation: "File exists and is valid YAML"
+        installation: "Already created in this session"
+
+    optional:
+      - dependency: "VS Code YAML extension"
+        purpose: "Syntax highlighting and validation"
+        installation: "Install 'YAML' extension by Red Hat"
+
+  implementation_notes:
+    phase_1_script_creation:
+      - "Create core/scripts/generate-story-yaml.sh"
+      - "Make executable: chmod +x core/scripts/generate-story-yaml.sh"
+      - "Implement argument parsing and validation"
+      - "Add epic YAML reading logic"
+
+    phase_2_prompt_creation:
+      - "Create core/prompts/story-generation-prompt.txt"
+      - "Include story YAML schema definition"
+      - "Test prompt with Claude CLI manually first"
+      - "Iterate on prompt based on output quality"
+
+    phase_3_claude_integration:
+      - "Verify run_ai_analysis() supports Claude CLI"
+      - "Test Claude CLI integration with sample prompt"
+      - "Add timeout and error handling"
+
+    phase_4_vscode_task:
+      - "Update templates/vscode/tasks.json"
+      - "Add input variables for epic, story, title"
+      - "Test task execution from VS Code"
+
+    phase_5_validation:
+      - "Run all manual tests"
+      - "Generate Story 1.2 using the task"
+      - "Use generated YAML to implement Story 1.2"
+
+  completion_criteria:
+    - "All acceptance criteria met and validated"
+    - "All manual tests pass"
+    - "Story 1.2 YAML successfully generated using this task"
+    - "No critical bugs found during testing"
+    - "Documentation updated (epic-1.yaml marked story 1.1 complete)"
+
+  next_story:
+    id: "1.2"
+    title: "Define Story YAML Schema and Validation"
+    approach: "Use the working task from Story 1.1 to generate Story 1.2 YAML"

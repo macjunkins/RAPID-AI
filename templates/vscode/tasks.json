@@ -2,6 +2,41 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "RAPID: Generate Story from Epic",
+            "detail": "Generate story YAML from epic context using Claude CLI - IMMEDIATE VALUE",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/generate-story-yaml.sh",
+            "args": [
+                "${input:epic}",
+                "${input:story}",
+                "${input:title}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "rapid-ai",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    },
+                    {
+                        "regexp": "^⚠️\\s+(.+)$",
+                        "message": 1,
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
             "label": "AI Workflow: Analyze Story",
             "type": "shell",
             "command": "${workspaceFolder}/core/scripts/ai-discovery.sh",

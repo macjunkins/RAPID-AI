@@ -1,0 +1,606 @@
+session:
+  date: "2025-10-23"
+  duration: "~3 hours"
+  status: "paused - bug found during testing"
+  topic: "RAPID-AI 2.0 - Major Course Correction to YAML-First Structured Execution"
+
+summary:
+  what_we_built: |
+    Complete architectural pivot from conversational BMAD agents to YAML-first
+    structured execution framework. Story 1.1 (Generate Story YAML from Epic)
+    implemented and ready for testing. Framework now self-contained in .vscode/
+    for easy distribution.
+
+  current_status: "Story 1.1 implementation complete, testing revealed missing 'timeout' command on macOS"
+
+  next_session_start: "Fix timeout command issue, test story generation, distribute to EmberCare"
+
+# Key Decisions Made
+
+decisions:
+  architectural_pivot:
+    from: "Conversational BMAD agents + Markdown outputs + CoPilot only"
+    to: "YAML-first structured data + Claude CLI + Execution-focused"
+    rationale: |
+      Conversation doesn't scale for execution. YAML provides:
+      - 50-70% token savings (4.3K → 1.5-2K tokens per story)
+      - Deterministic parsing (no natural language ambiguity)
+      - Schema validation ensures correctness
+      - Queryable and automatable
+
+  conversation_vs_execution:
+    conversation_mode:
+      use_for: "Ideation, exploration, brainstorming, architectural decisions"
+      format: "Natural conversation with Claude"
+      token_cost: "High but worth it - this is creative work"
+    execution_mode:
+      use_for: "Code generation from structured specifications"
+      format: "YAML input → Code output"
+      token_cost: "Minimal - deterministic, no interpretation needed"
+
+  yaml_only:
+    decision: "YAML-first, no markdown"
+    reasoning: "AI consumption optimized, can add markdown later if needed"
+    benefits:
+      - "Deterministic parsing"
+      - "Schema validation"
+      - "50-70% token savings"
+      - "Queryable with yq"
+
+  documentation_workflow:
+    decision: "Remove per-task documentation verification"
+    keep: "Epic-level documentation tracking only"
+    reasoning: "Reduce ceremony, solo developer doesn't need automated enforcement"
+
+  vscode_structure:
+    decision: "All RAPID-AI code lives in .vscode/"
+    structure: |
+      .vscode/
+      ├── tasks.json
+      ├── core/
+      │   ├── scripts/
+      │   ├── workflows/
+      │   └── config/
+      └── README.md
+    benefits:
+      - "Single directory copy for distribution"
+      - "No root directory pollution"
+      - "Works with existing docs/ structure"
+      - "Self-contained and portable"
+
+  dogfooding:
+    approach: "RAPID-AI uses .vscode/ for self-development"
+    distribution: "Copy .vscode/ to any project (e.g., EmberCare)"
+    testing: "Test in RAPID-AI first, then distribute"
+
+# Files Created This Session
+
+files_created:
+  prds_and_planning:
+    - path: "docs/prd-v2.yaml"
+      size: "~50 KB"
+      purpose: "Complete PRD for RAPID-AI 2.0 transformation"
+      status: "complete"
+
+    - path: "docs/prd/epic-1.yaml"
+      size: "~6 KB"
+      purpose: "Epic 1: Structured YAML Workflow Foundation (5 stories)"
+      status: "complete"
+
+    - path: "docs/prd/README.md"
+      size: "~3 KB"
+      purpose: "Epic YAML guide and philosophy"
+      status: "complete"
+
+  stories:
+    - path: "docs/stories/1-1-story.yaml"
+      size: "~8 KB"
+      purpose: "Story 1.1: Generate Story YAML from Epic Context"
+      status: "complete"
+
+    - path: "docs/stories/README.md"
+      size: "~4 KB"
+      purpose: "Story YAML guide and querying examples"
+      status: "complete"
+
+  vscode_integration:
+    - path: ".vscode/tasks.json"
+      size: "~3 KB"
+      purpose: "VS Code tasks for RAPID-AI (5 tasks)"
+      status: "complete but has bug"
+      tasks:
+        - "RAPID: Generate Story from Epic"
+        - "RAPID: Test Claude CLI"
+        - "RAPID: Validate YAML Files"
+        - "RAPID: Query All Stories"
+        - "RAPID: Show Epic Summary"
+
+    - path: ".vscode/README.md"
+      size: "~2 KB"
+      purpose: "Distribution guide and quick reference"
+      status: "complete"
+
+  framework_code:
+    - path: ".vscode/core/scripts/generate-story-yaml.sh"
+      size: "~8 KB"
+      purpose: "Story generator using Claude CLI"
+      status: "complete but has timeout bug"
+      bug: "Uses 'timeout' command which doesn't exist on macOS by default"
+
+    - path: ".vscode/core/workflows/common-functions.sh"
+      size: "~40 KB"
+      purpose: "AI abstraction layer and shared functions"
+      status: "copied from existing, not modified"
+
+    - path: ".vscode/core/config/.ai-workflow.yaml"
+      size: "~5 KB"
+      purpose: "Configuration for AI tools and workflows"
+      status: "complete"
+
+  documentation:
+    - path: "STORY-1.1-COMPLETE.md"
+      size: "~5 KB"
+      purpose: "Story 1.1 testing guide and checklist"
+      status: "complete"
+
+    - path: "DISTRIBUTION-CHECKLIST.md"
+      size: "~8 KB"
+      purpose: "What to copy to other projects (deprecated by .vscode/ approach)"
+      status: "obsolete - superseded by .vscode/ structure"
+
+    - path: "READY-TO-DISTRIBUTE.md"
+      size: "~5 KB"
+      purpose: "Complete distribution guide for .vscode/ approach"
+      status: "complete"
+
+    - path: "install-rapid-ai.sh"
+      size: "~3 KB"
+      purpose: "Installation script (obsolete - just cp -r .vscode/)"
+      status: "obsolete"
+
+# Current Bug
+
+bug:
+  issue: "timeout command not found on macOS"
+  location: ".vscode/core/scripts/generate-story-yaml.sh:214"
+  error_message: "/Users/johnjunkins/GitHub/RAPID-AI/.vscode/core/scripts/generate-story-yaml.sh: line 214: timeout: command not found"
+
+  context: |
+    Script uses: timeout 60s claude -p "$PROMPT"
+    macOS doesn't have 'timeout' command by default (it's a GNU coreutils command)
+
+  fix_options:
+    option_1:
+      approach: "Install GNU coreutils via Homebrew"
+      command: "brew install coreutils"
+      result: "timeout command available as 'gtimeout'"
+      notes: "Requires Homebrew, adds dependency"
+
+    option_2:
+      approach: "Use Bash built-in with background process"
+      implementation: |
+        claude -p "$PROMPT" > "$TEMP_OUTPUT" 2>&1 &
+        CLAUDE_PID=$!
+        sleep 60
+        if kill -0 $CLAUDE_PID 2>/dev/null; then
+          kill $CLAUDE_PID
+          echo "Timeout"
+        fi
+        wait $CLAUDE_PID
+      notes: "No dependencies, pure Bash"
+
+    option_3:
+      approach: "Remove timeout entirely for MVP"
+      rationale: "Claude CLI is fast (10-30 seconds), timeout might be premature optimization"
+      notes: "Simplest fix, can add timeout later if needed"
+
+  recommendation: "Option 2 - Use Bash built-in approach (portable, no dependencies)"
+
+# Technical Facts Established
+
+facts:
+  claude_cli:
+    command: "claude -p 'prompt'"
+    output_format: "Text by default, JSON with --output-format json"
+    timeout_typical: "10-30 seconds for story generation"
+    installed: true
+    version: "Available via Claude subscription"
+    works: true
+
+  yq:
+    command: "yq"
+    purpose: "YAML parsing and validation"
+    installed: false  # User doesn't have it yet
+    install_command: "brew install yq"
+    required: false  # Optional but recommended
+    note: "Validation skipped if not available"
+
+  project_structure:
+    docs_prd: "exists - contains epic YAML files"
+    docs_stories: "exists - will contain generated story YAMLs"
+    vscode_dir: "now contains entire RAPID-AI framework"
+
+  token_savings:
+    markdown_workflow: "~4,300 tokens per story (estimated)"
+    yaml_workflow: "~1,500-2,000 tokens per story (target)"
+    savings: "50-70% reduction"
+    measured: false  # Need to measure after fixing bug
+
+  compatibility:
+    embercare: "100% backward compatible - existing markdown workflows still work"
+    rapid_ai_v2: "New YAML-first approach"
+    transition: "EmberCare can adopt incrementally"
+
+# Project Structure
+
+current_structure:
+  vscode_directory:
+    location: "RAPID-AI/.vscode/"
+    contains:
+      - "tasks.json - 5 VS Code tasks"
+      - "README.md - Distribution guide"
+      - "settings.json - VS Code settings"
+      - "core/ - All RAPID-AI framework code"
+
+    core_structure:
+      scripts:
+        - "generate-story-yaml.sh - Story generator (has timeout bug)"
+      workflows:
+        - "common-functions.sh - AI abstraction layer"
+      config:
+        - ".ai-workflow.yaml - Configuration"
+
+  docs_directory:
+    prd:
+      - "epic-1.yaml - Epic 1 definition"
+      - "README.md - Epic guide"
+    stories:
+      - "1-1-story.yaml - Story 1.1 specification"
+      - "README.md - Story guide"
+
+  root_directory_legacy:
+    note: "These exist but NOT needed for distribution"
+    files:
+      - "core/ - OLD LOCATION (superseded by .vscode/core/)"
+      - "templates/ - OLD templates (not needed)"
+      - ".bmad-core/ - BMAD content (to be removed in Epic 4)"
+      - "src/ - CLI wrapper (not needed for MVP)"
+      - "package.json - npm package (not needed for MVP)"
+
+# RAPID-AI 2.0 Architecture
+
+architecture:
+  epics:
+    epic_1:
+      id: 1
+      title: "Structured YAML Workflow Foundation"
+      priority: "critical"
+      status: "in_progress"
+      stories:
+        - id: "1.1"
+          title: "Generate Story YAML from Epic Context"
+          status: "in_progress - testing blocked by timeout bug"
+          priority: "critical"
+        - id: "1.2"
+          title: "Define Story YAML Schema and Validation"
+          status: "planned"
+        - id: "1.3"
+          title: "Create Epic YAML Schema and Directory Structure"
+          status: "planned"
+        - id: "1.4"
+          title: "Create Working VS Code Task Suite"
+          status: "planned"
+        - id: "1.5"
+          title: "Implement Token Usage Tracking"
+          status: "planned"
+
+    epic_2:
+      id: 2
+      title: "Claude CLI Integration for Superior Reasoning"
+      priority: "critical"
+      status: "planned"
+      note: "Partially done - Claude CLI integrated in Story 1.1"
+
+    epic_3:
+      id: 3
+      title: "VS Code Task Enhancement for YAML Workflows"
+      priority: "high"
+      status: "planned"
+
+    epic_4:
+      id: 4
+      title: "Strip BMAD Overhead and Extract Useful Patterns"
+      priority: "medium"
+      status: "planned"
+
+  yaml_schemas:
+    story_schema:
+      required_fields:
+        - "story.id"
+        - "story.epic_id"
+        - "story.title"
+        - "story.priority"
+        - "story.status"
+        - "story.description"
+        - "story.acceptance_criteria"
+      optional_fields:
+        - "story.metadata"
+        - "story.rationale"
+        - "story.technical_notes"
+        - "story.implementation_files"
+        - "story.testing_approach"
+        - "story.dependencies"
+        - "story.completion_criteria"
+
+    epic_schema:
+      required_fields:
+        - "epic.id"
+        - "epic.title"
+        - "epic.priority"
+        - "epic.status"
+        - "epic.description"
+        - "epic.goals"
+        - "epic.stories"
+      optional_fields:
+        - "epic.success_criteria"
+        - "epic.documentation"
+        - "epic.technical_requirements"
+        - "epic.risk_assessment"
+
+# Distribution Plan
+
+distribution:
+  target_project: "EmberCare"
+  method: "Copy .vscode/ directory"
+  command: "cp -r RAPID-AI/.vscode EmberCare/"
+
+  prerequisites:
+    required:
+      - dependency: "Claude CLI"
+        check: "claude --version"
+        status: "installed"
+
+      - dependency: "Existing docs/ structure"
+        check: "docs/prd/ and docs/stories/ exist"
+        status: "exists in EmberCare"
+
+    optional:
+      - dependency: "yq"
+        check: "yq --version"
+        status: "not installed"
+        install: "brew install yq"
+        note: "Recommended for YAML validation"
+
+  embercare_setup:
+    step_1:
+      action: "Copy .vscode/"
+      command: "cp -r RAPID-AI/.vscode EmberCare/"
+
+    step_2:
+      action: "Configure for Flutter"
+      file: "EmberCare/.vscode/core/config/.ai-workflow.yaml"
+      changes:
+        - "project.type: 'flutter'"
+        - "project.architecture: ['bloc', 'drift']"
+
+    step_3:
+      action: "Create EmberCare epic"
+      file: "EmberCare/docs/prd/epic-1.yaml"
+      content: "Medication Inventory Management features"
+
+    step_4:
+      action: "Generate first story"
+      task: "RAPID: Generate Story from Epic"
+      inputs: "Epic 1, Story 1, 'Add Medication to Inventory'"
+
+# Assumptions Still in Place
+
+assumptions:
+  user_environment:
+    - "macOS operating system (Darwin 25.0.0)"
+    - "Claude CLI installed and authenticated"
+    - "VS Code as primary IDE"
+    - "Bash shell available"
+    - "Git repository"
+    - "GitHub CLI (gh) for GitHub operations"
+
+  project_constraints:
+    - "EmberCare is production Flutter app with BLoC + Drift"
+    - "Solo developer (John Junkins / macjunkins)"
+    - "RAPID-AI extracted from EmberCare patterns"
+    - "Must maintain 100% EmberCare backward compatibility"
+
+  workflow_approach:
+    - "VS Code tasks are primary interface (not CLI)"
+    - "YAML-first for AI consumption"
+    - "Dog-fooding: RAPID-AI uses its own workflows"
+    - "Manual testing before automation"
+    - "Incremental distribution (test in RAPID-AI first)"
+
+  ai_tools:
+    - "Claude CLI for discovery and analysis (superior reasoning)"
+    - "CoPilot CLI for code generation (fast, simple)"
+    - "Dual-AI strategy based on task type"
+
+  user_preferences:
+    - "Verbose code with explanatory comments (why, not just what)"
+    - "Test as you code, not after"
+    - "No auto-commit or auto-PR without explicit approval"
+    - "Ask before destructive operations"
+    - "Explanation-first, then execution"
+
+# Next Steps
+
+immediate_actions:
+  priority_1:
+    task: "Fix timeout command bug"
+    approach: "Implement Bash built-in timeout mechanism"
+    file: ".vscode/core/scripts/generate-story-yaml.sh"
+    estimated_time: "15-30 minutes"
+
+  priority_2:
+    task: "Test story generation end-to-end"
+    action: "Generate Story 1.2 using fixed script"
+    validation:
+      - "Story YAML created in docs/stories/1-2-story.yaml"
+      - "YAML is valid (yq validation if installed)"
+      - "Content is relevant to Epic 1"
+      - "All required fields present"
+
+  priority_3:
+    task: "Install yq for YAML validation"
+    command: "brew install yq"
+    optional: true
+    benefit: "Enable YAML validation in scripts"
+
+  priority_4:
+    task: "Generate remaining Epic 1 stories"
+    stories:
+      - "1.3 - Create Epic YAML Schema"
+      - "1.4 - Create VS Code Task Suite"
+      - "1.5 - Token Usage Tracking"
+
+  priority_5:
+    task: "Distribute to EmberCare"
+    when: "After Story 1.1 fully tested in RAPID-AI"
+    command: "cp -r RAPID-AI/.vscode EmberCare/"
+
+# Open Questions
+
+questions:
+  timeout_implementation:
+    question: "Which timeout approach to use?"
+    options:
+      - "Bash built-in (portable)"
+      - "Install GNU coreutils (adds dependency)"
+      - "Remove timeout for MVP (simplest)"
+    recommendation: "Bash built-in for portability"
+
+  yq_installation:
+    question: "Should yq be required or optional?"
+    current: "Optional - validation skipped if missing"
+    recommendation: "Keep optional, show helpful message"
+
+  token_tracking:
+    question: "When to implement token usage tracking (Story 1.5)?"
+    timing: "After Stories 1.2, 1.3, 1.4 complete"
+    purpose: "Measure actual token savings vs markdown"
+
+  markdown_generation:
+    question: "Should we auto-generate markdown from YAML for GitHub readability?"
+    decision: "Not for MVP - YAML-only is sufficient"
+    revisit: "After YAML workflows proven with EmberCare"
+
+# Context for Next Session
+
+context_preservation:
+  what_works:
+    - "PRD v2.0 complete with 4 epics defined"
+    - "Epic 1 fully specified with 5 stories"
+    - "Story 1.1 specification complete"
+    - "VS Code task structure working"
+    - ".vscode/ self-contained structure validated"
+    - "Claude CLI integration tested (works)"
+    - "Distribution approach confirmed"
+
+  what_needs_fixing:
+    - "Timeout command bug in generate-story-yaml.sh"
+    - "No YAML validation (yq not installed)"
+
+  what_needs_testing:
+    - "End-to-end story generation workflow"
+    - "YAML output quality from Claude"
+    - "Token usage measurement"
+    - "Distribution to EmberCare"
+
+  key_files_to_reference:
+    - "docs/prd-v2.yaml - Complete RAPID-AI 2.0 vision"
+    - "docs/prd/epic-1.yaml - Epic 1 with 5 stories"
+    - "docs/stories/1-1-story.yaml - Story 1.1 spec"
+    - ".vscode/core/scripts/generate-story-yaml.sh - Story generator (needs timeout fix)"
+    - "READY-TO-DISTRIBUTE.md - Distribution guide"
+    - "STORY-1.1-COMPLETE.md - Testing checklist"
+
+  state_of_conversation:
+    mode: "BMad Master agent active"
+    task: "Story 1.1 implementation"
+    status: "Implementation complete, testing blocked by bug"
+    next: "Fix timeout bug, test, then continue with remaining stories"
+
+# User Preferences Reminder
+
+user_profile:
+  name: "John Junkins"
+  handle: "macjunkins"
+  role: "Solo developer, self-taught"
+  primary_languages: [".NET", "Dart/Flutter"]
+  philosophy: "Build useful first, commercialize later"
+
+  critical_rules:
+    - "ALWAYS ask before committing code"
+    - "ALWAYS ask before creating PRs"
+    - "ALWAYS ask before destructive operations"
+    - "Explain WHY, not just WHAT"
+    - "Challenge bad ideas respectfully"
+    - "No gaslighting - honest feedback"
+
+  work_style:
+    - "Verbose code with comments explaining WHY"
+    - "Test as you code"
+    - "Dog-food your own tools"
+    - "MVP first, polish later"
+    - "Break for testing and validation"
+
+# Session Statistics
+
+stats:
+  files_created: 15
+  files_modified: 3
+  lines_of_code: "~400 (shell script + config)"
+  documentation: "~15 KB markdown"
+  total_size: "~58 KB framework in .vscode/"
+  time_invested: "~3 hours"
+
+  progress:
+    epic_1_stories: "1 of 5 in progress (20%)"
+    overall_rapid_ai_v2: "Epic 1 started, Epics 2-4 planned"
+
+  blockers:
+    current: "timeout command not available on macOS"
+    severity: "minor - easy fix"
+    impact: "Cannot test story generation until fixed"
+
+# Philosophical Notes
+
+philosophy:
+  conversation_for_ideation:
+    note: "This entire session was conversational - perfect use case"
+    value: "Teased out architectural decisions, explored options, made key choices"
+    outcome: "Clear vision for YAML-first execution framework"
+
+  execution_for_implementation:
+    note: "Next session should be execution-focused"
+    approach: "Fix bug → test → generate stories → distribute"
+    minimal_conversation: "Just do the work, validate results"
+
+  dogfooding_success:
+    note: "RAPID-AI will generate its own remaining stories using Story 1.1"
+    validation: "Framework proves itself by building itself"
+    confidence: "If it works for RAPID-AI, it'll work for EmberCare"
+
+# End of Session Notes
+
+session_end:
+  timestamp: "2025-10-23 ~14:50"
+  reason: "Bug discovered during testing, user requested break"
+  state: "Clean stopping point - implementation done, testing paused"
+
+  resume_with:
+    - "Fix timeout command bug (15-30 min fix)"
+    - "Test story generation end-to-end"
+    - "Generate Stories 1.2-1.5 using working task"
+    - "Distribute to EmberCare when confident"
+
+  confidence_level: "High - architecture solid, implementation complete, bug is minor"
+
+  user_sentiment: "Positive - excited about YAML-first approach and .vscode/ structure"
