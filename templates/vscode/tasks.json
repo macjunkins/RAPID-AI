@@ -117,7 +117,6 @@
             "label": "Systematic: Quality Checklist",
             "type": "shell",
             "command": "${workspaceFolder}/core/workflows/systematic/quality-checklist.sh",
-            // Explicitly specify 'interactive' mode for clarity, even though it is the script's default.
             "args": ["interactive"],
             "group": "build",
             "presentation": {
@@ -426,6 +425,138 @@
                     }
                 ]
             }
+        },
+        {
+            "label": "AI Documentation: Get AI Suggestions for Files",
+            "detail": "Use AI to analyze specific files and suggest documentation updates",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
+            "args": [
+                "--suggest",
+                "--files",
+                "${input:aiAnalysisFiles}"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "env": {
+                    "ENABLE_AI_ANALYSIS": "true"
+                }
+            },
+            "problemMatcher": {
+                "owner": "ai-documentation",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^📋\\s+Documentation\\srequired\\sfor:\\s(.+)$",
+                        "message": "AI suggests documentation update for: $1",
+                        "severity": 2
+                    },
+                    {
+                        "regexp": "^⚠️\\s+(.+)$",
+                        "message": "$1",
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
+            "label": "AI Documentation: Comprehensive Analysis",
+            "detail": "Run comprehensive AI-powered documentation analysis on the project",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
+            "args": ["--analyze-ai"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "env": {
+                    "ENABLE_AI_ANALYSIS": "true"
+                }
+            },
+            "problemMatcher": {
+                "owner": "ai-documentation-analysis",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": "AI analysis error: $1"
+                    },
+                    {
+                        "regexp": "^⚠️\\s+(.+)$",
+                        "message": "AI analysis warning: $1",
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
+            "label": "AI Documentation: Verify Documentation Currency",
+            "detail": "Use AI to verify that documentation is current with recent changes",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
+            "args": ["--verify"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared"
+            },
+            "options": {
+                "env": {
+                    "ENABLE_AI_ANALYSIS": "true"
+                }
+            },
+            "problemMatcher": {
+                "owner": "ai-documentation-verification",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^⚠️\\s+Documentation\\sverification\\sidentified\\spotential\\sissues$",
+                        "message": "Documentation verification identified potential issues",
+                        "severity": 2
+                    },
+                    {
+                        "regexp": "^(.+)\\s→\\smay\\srequire\\sdocumentation\\supdates$",
+                        "message": "$1 may require documentation updates",
+                        "severity": 2
+                    }
+                ]
+            }
+        },
+        {
+            "label": "AI Documentation: Complete Story with AI Documentation Check",
+            "detail": "Complete story workflow with AI-powered documentation verification",
+            "type": "shell",
+            "command": "echo",
+            "args": ["🤖 AI-Enhanced Documentation Workflow: Analysis → Plan → AI Verification"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Documentation: Analyze Story with Documentation",
+                "Documentation: Generate Implementation Plan with Documentation",
+                "AI Documentation: Verify Documentation Currency"
+            ]
         }
     ],
     "inputs": [
@@ -469,6 +600,12 @@
             "id": "changedFiles",
             "description": "Comma-separated list of changed files (optional)",
             "default": "",
+            "type": "promptString"
+        },
+        {
+            "id": "aiAnalysisFiles",
+            "description": "Comma-separated list of files to analyze with AI",
+            "default": "core/scripts/,src/cli.js,templates/vscode/tasks.json",
             "type": "promptString"
         }
     ]
