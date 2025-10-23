@@ -404,3 +404,74 @@ generate_prompt() {
             ;;
     esac
 }
+
+# Documentation Detection Functions
+# Based on proven BMAD-METHOD patterns, adapted for RAPID-AI
+
+# Check if file changes require documentation updates
+check_documentation_needs() {
+    local changed_files="$1"
+    
+    if [ -z "$changed_files" ]; then
+        return 1
+    fi
+    
+    # Use the documentation detection script
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local doc_detection_script="$script_dir/../scripts/doc-detection.sh"
+    
+    if [ -f "$doc_detection_script" ]; then
+        echo "$changed_files" | tr ',' '\n' | while read -r file; do
+            if [ -n "$file" ]; then
+                "$doc_detection_script" -f "$file" --suggest
+            fi
+        done
+    else
+        echo "⚠️ Documentation detection script not found: $doc_detection_script"
+        return 1
+    fi
+}
+
+# Get documentation files that need updating for a specific file
+get_documentation_files() {
+    local file_path="$1"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local doc_detection_script="$script_dir/../scripts/doc-detection.sh"
+    
+    if [ -f "$doc_detection_script" ]; then
+        "$doc_detection_script" -f "$file_path" 2>/dev/null | grep "^•" | sed 's/^• //'
+    fi
+}
+
+# Validate documentation currency (basic implementation)
+validate_documentation_currency() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local doc_detection_script="$script_dir/../scripts/doc-detection.sh"
+    
+    echo "🔍 Checking documentation currency..."
+    
+    if [ -f "$doc_detection_script" ]; then
+        # Check git changes for documentation needs
+        "$doc_detection_script" --git-diff
+        return $?
+    else
+        echo "⚠️ Documentation detection not available"
+        return 1
+    fi
+}
+
+# Generate documentation update suggestions
+suggest_documentation_updates() {
+    local changed_files="$1"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local doc_detection_script="$script_dir/../scripts/doc-detection.sh"
+    
+    if [ -f "$doc_detection_script" ] && [ -n "$changed_files" ]; then
+        echo "💡 Documentation update suggestions:"
+        echo "$changed_files" | tr ',' '\n' | while read -r file; do
+            if [ -n "$file" ]; then
+                "$doc_detection_script" -f "$file" --suggest
+            fi
+        done
+    fi
+}

@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# AI-powered story/feature discovery (framework version)
+#!/bin/bash
+
+# AI-powered story discovery and analysis
+# Integrates with multiple AI tools for systematic story analysis
+# Now includes documentation detection and analysis
+
+set -euo pipefail
 # Language-agnostic core extracted from EmberCare implementation
 
 set -e
