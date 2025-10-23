@@ -82,13 +82,14 @@ generate_document_from_template() {
                     ;;
             esac
             
-            # Replace in output file
-            sed -i.bak "s/{{${var}}}/${value}/g" "$output_file"
+            # Replace in output file (portable way)
+            tmpfile="$(mktemp)"
+            sed "s/{{${var}}}/${value}/g" "$output_file" > "$tmpfile" && mv "$tmpfile" "$output_file"
         fi
     done < "$vars_file"
     
-    # Clean up backup file
-    rm -f "${output_file}.bak"
+    # Clean up backup file (no longer needed)
+    
     
     # Clean up variables file
     rm -f "$vars_file"
