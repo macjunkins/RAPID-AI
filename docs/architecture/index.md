@@ -1,0 +1,27 @@
+# RAPID-AI Framework Brownfield Architecture Document
+
+## Table of Contents
+
+- [RAPID-AI Framework Brownfield Architecture Document](#table-of-contents)
+  - [Introduction](./introduction.md)
+    - [Document Scope](./introduction.md#document-scope)
+    - [Change Log](./introduction.md#change-log)
+  - [Quick Reference - Key Files and Entry Points](./quick-reference-key-files-and-entry-points.md)
+    - [Critical Files for Understanding the System](./quick-reference-key-files-and-entry-points.md#critical-files-for-understanding-the-system)
+    - [Enhancement Impact Areas (Immediate Priorities)](./quick-reference-key-files-and-entry-points.md#enhancement-impact-areas-immediate-priorities)
+  - [High Level Architecture](./high-level-architecture.md)
+    - [Technical Summary](./high-level-architecture.md#technical-summary)
+    - [Actual Tech Stack (from package.json analysis)](./high-level-architecture.md#actual-tech-stack-from-packagejson-analysis)
+    - [Repository Structure Reality Check](./high-level-architecture.md#repository-structure-reality-check)
+  - [Source Tree and Module Organization](./source-tree-and-module-organization.md)
+    - [Project Structure (Actual)](./source-tree-and-module-organization.md#project-structure-actual)
+    - [Key Modules and Their Purpose](./source-tree-and-module-organization.md#key-modules-and-their-purpose)
+  - [Data Models and APIs](./data-models-and-apis.md)
+    - [Configuration Data Model](./data-models-and-apis.md#configuration-data-model)
+    - [CLI API Structure](./data-models-and-apis.md#cli-api-structure)
+  - [Technical Debt and Known Issues](#technical-debt-and-known-issues)
+  - [Integration Points and External Dependencies](#integration-points-and-external-dependencies)
+  - [Development and Deployment](#development-and-deployment)
+  - [Testing Reality](#testing-reality)
+  - [Technical Constraints for Enhancement](#technical-constraints-for-enhancement)
+  - [Appendix - Useful Commands and Scripts](#appendix-useful-commands-and-scripts)
