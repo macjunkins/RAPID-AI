@@ -90,6 +90,73 @@
                 "AI Workflow: Analyze Story",
                 "AI Workflow: Generate Implementation Plan"
             ]
+        },
+        {
+            "label": "Systematic: Project Analysis",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/workflows/systematic/project-analysis.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "systematic-workflow",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^❌\\s+(.+)$",
+                        "message": 1
+                    }
+                ]
+            }
+        },
+        {
+            "label": "Systematic: Quality Checklist",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/workflows/systematic/quality-checklist.sh",
+            // Explicitly specify 'interactive' mode for clarity, even though it is the script's default.
+            "args": ["interactive"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Systematic: Generate Document",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/workflows/systematic/document-generator.sh",
+            "args": ["interactive"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Systematic: Generate Story Document",
+            "type": "shell",
+            "command": "${workspaceFolder}/core/workflows/systematic/document-generator.sh",
+            "args": [
+                "batch",
+                "story-template",
+                "story-${input:epic}-${input:story}",
+                "STORY_NUMBER=${input:epic}.${input:story},STORY_TITLE=${input:title},USER_ROLE=${input:userRole},STATUS=Draft"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
         }
     ],
     "inputs": [
@@ -109,6 +176,12 @@
             "id": "title",
             "description": "Story title",
             "default": "New Feature",
+            "type": "promptString"
+        },
+        {
+            "id": "userRole",
+            "description": "User role (e.g., developer, user, admin)",
+            "default": "developer",
             "type": "promptString"
         }
     ]
