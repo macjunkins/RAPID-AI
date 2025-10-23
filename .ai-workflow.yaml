@@ -62,6 +62,63 @@ integrations:
     include_metadata: true
     systematic_docs: true  # Include systematic workflow documentation
 
+# Documentation-as-you-go workflow configuration
+documentation_workflow:
+  enabled: true  # Enable documentation verification features
+
+  # Detection configuration
+  detection:
+    enabled: true  # Automatically detect when documentation needs updating
+    auto_detect_changes: true  # Monitor file changes for documentation requirements
+    use_git_diff: true  # Use git diff to identify changes requiring documentation
+
+  # AI-powered analysis configuration
+  ai_analysis:
+    enabled: true  # Use AI for documentation gap analysis and suggestions
+    timeout: 60  # AI analysis timeout in seconds
+    suggestions: true  # Generate AI-powered documentation improvement suggestions
+
+  # Task completion gate configuration
+  completion_gate:
+    enabled: false  # Don't block task completion by default (progressive enhancement)
+    enforce_on_critical: true  # Block completion for critical documentation gaps
+    enforce_on_major: false  # Don't block for major gaps (warn only)
+    enforce_on_minor: false  # Don't block for minor gaps
+
+  # Documentation severity levels
+  severity:
+    critical:  # Documentation gaps that block task completion when gate enabled
+      - "user_facing_changes_undocumented"  # New features lack user documentation
+      - "breaking_changes_undocumented"  # Breaking changes not documented
+      - "api_changes_undocumented"  # API modifications lack documentation
+      - "configuration_changes_undocumented"  # New config options not documented
+    major:  # Important documentation gaps that should be addressed
+      - "workflow_changes_undocumented"  # Process changes not documented
+      - "integration_changes_undocumented"  # Integration modifications not documented
+      - "examples_outdated"  # Code examples no longer work
+    minor:  # Documentation improvements that can be deferred
+      - "formatting_inconsistencies"  # Style guide compliance issues
+      - "minor_inaccuracies"  # Small documentation errors
+      - "enhancement_opportunities"  # Documentation could be improved
+
+  # Verification and validation configuration
+  verification:
+    use_checklist: true  # Use systematic checklist for verification
+    checklist_path: "core/checklists/documentation-currency-checklist.md"
+    require_validation: false  # Don't require full checklist validation by default
+
+  # Output and reporting configuration
+  reporting:
+    generate_reports: true  # Generate documentation gap reports
+    report_output: ".ai/documentation-reports"  # Where to save reports
+    include_suggestions: true  # Include AI suggestions in reports
+
+  # Integration with development workflow
+  integration:
+    vscode_tasks: true  # Integrate with VS Code tasks
+    problem_matchers: true  # Use VS Code problem matchers for documentation issues
+    progress_indicators: true  # Show documentation status in progress feedback
+
 # Project-specific settings (customize per project)
 custom:
   prd_file: "docs/prd.md"

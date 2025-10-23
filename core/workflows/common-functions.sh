@@ -238,6 +238,115 @@ run_ai_analysis() {
     return $exit_code
 }
 
+# AI-powered documentation analysis
+run_ai_documentation_analysis() {
+    local documentation_files="$1"
+    local code_files="$2"
+    local output_file="$3"
+    local ai_tool="${4:-$AI_TOOL}"
+    local timeout="${5:-120}"
+    
+    echo "📚 Starting AI-powered documentation analysis..."
+    
+    # Generate AI prompt for documentation analysis
+    local prompt=$(generate_documentation_analysis_prompt "$documentation_files" "$code_files")
+    
+    # Run AI analysis with documentation-specific processing
+    if run_ai_analysis "$ai_tool" "$prompt" "$output_file" "$timeout"; then
+        echo "✅ AI documentation analysis completed: $output_file"
+        process_documentation_ai_output "$output_file"
+        return 0
+    else
+        echo "⚠️ AI documentation analysis failed, using fallback"
+        create_documentation_analysis_fallback "$output_file" "$documentation_files"
+        return 1
+    fi
+}
+
+# Generate documentation freshness analysis
+analyze_documentation_freshness() {
+    local documentation_file="$1"
+    local related_code_files="$2"
+    local ai_tool="${3:-$AI_TOOL}"
+    
+    echo "🔍 Analyzing documentation freshness for: $documentation_file"
+    
+    # Check if files exist
+    if [ ! -f "$documentation_file" ]; then
+        echo "❌ Documentation file not found: $documentation_file"
+        return 1
+    fi
+    
+    # Generate AI prompt for freshness analysis
+    local prompt="Analyze the documentation file '$documentation_file' against the current implementation in files: $related_code_files. 
+    
+    Please provide:
+    1. Identify any outdated information in the documentation
+    2. List missing documentation for new features or changes
+    3. Suggest specific updates to improve documentation accuracy
+    4. Rate documentation freshness on a scale of 1-10
+    5. Provide specific line-by-line suggestions where possible
+    
+    Focus on practical, actionable feedback that helps maintain documentation currency."
+    
+    # Create temporary output file
+    local temp_output=$(mktemp)
+    
+    # Run AI analysis
+    if run_ai_analysis "$ai_tool" "$prompt" "$temp_output"; then
+        echo "📋 Documentation freshness analysis results:"
+        cat "$temp_output"
+        rm -f "$temp_output"
+        return 0
+    else
+        echo "⚠️ AI analysis failed for documentation freshness"
+        rm -f "$temp_output"
+        return 1
+    fi
+}
+
+# Generate AI suggestions for documentation content
+generate_documentation_suggestions() {
+    local documentation_gaps="$1"
+    local context_files="$2"
+    local ai_tool="${3:-$AI_TOOL}"
+    
+    echo "💡 Generating AI suggestions for documentation improvements..."
+    
+    # Generate AI prompt for content suggestions
+    local prompt="Based on the following documentation gaps and context files, generate specific content suggestions:
+
+    Documentation Gaps:
+    $documentation_gaps
+    
+    Context Files:
+    $context_files
+    
+    Please provide:
+    1. Specific content suggestions for each gap
+    2. Example text that could be added to documentation
+    3. Recommended structure for new documentation sections
+    4. Suggestions for improving existing content clarity
+    5. Examples of code snippets or configurations that should be documented
+    
+    Make suggestions actionable and ready to implement."
+    
+    # Create temporary output file
+    local temp_output=$(mktemp)
+    
+    # Run AI analysis
+    if run_ai_analysis "$ai_tool" "$prompt" "$temp_output"; then
+        echo "📝 AI-generated documentation suggestions:"
+        cat "$temp_output"
+        rm -f "$temp_output"
+        return 0
+    else
+        echo "⚠️ AI analysis failed for documentation suggestions"
+        rm -f "$temp_output"
+        return 1
+    fi
+}
+
 # Process AI output and add metadata
 process_ai_output() {
     local temp_file=$1
@@ -474,4 +583,495 @@ suggest_documentation_updates() {
             fi
         done
     fi
+}
+
+# Check if task completion is allowed (documentation verification)
+check_task_completion_allowed() {
+    local changed_files="$1"
+    local force_completion="${2:-false}"
+    
+    if [ "$force_completion" = "true" ]; then
+        echo "⚠️ Force completion mode - skipping documentation verification"
+        return 0
+    fi
+    
+    echo "🔍 Verifying documentation currency before task completion..."
+    
+    # Check if documentation needs updating
+    local doc_issues=false
+    
+    if [ -n "$changed_files" ]; then
+        echo "📁 Checking changed files for documentation requirements:"
+        echo "$changed_files" | tr ',' '\n' | while read -r file; do
+            if [ -n "$file" ]; then
+                echo "  • $file"
+                local doc_files=$(get_documentation_files "$file")
+                if [ -n "$doc_files" ]; then
+                    echo "    📝 Requires documentation updates:"
+                    echo "$doc_files" | while read -r doc_file; do
+                        if [ -n "$doc_file" ]; then
+                            echo "      → $doc_file"
+                        fi
+                    done
+                    doc_issues=true
+                fi
+            fi
+        done
+    fi
+    
+    # Use git to check for uncommitted changes that might need documentation
+    if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+        local git_changes=$(git diff --name-only HEAD 2>/dev/null || true)
+        if [ -n "$git_changes" ]; then
+            echo "📝 Git changes detected that may need documentation:"
+            echo "$git_changes" | while read -r file; do
+                if [ -n "$file" ]; then
+                    local doc_files=$(get_documentation_files "$file")
+                    if [ -n "$doc_files" ]; then
+                        echo "  • $file → requires documentation updates"
+                        doc_issues=true
+                    fi
+                fi
+            done
+        fi
+    fi
+    
+    if [ "$doc_issues" = "true" ]; then
+        echo ""
+        echo "❌ Documentation verification failed!"
+        echo "📋 Documentation updates are required before task completion."
+        echo ""
+        echo "To complete this task:"
+        echo "1. Update the required documentation files listed above"
+        echo "2. Run documentation verification again"
+        echo "3. Or use --force to skip verification (not recommended)"
+        echo ""
+        return 1
+    else
+        echo "✅ Documentation verification passed - no updates required"
+        return 0
+    fi
+}
+
+# Comprehensive task completion check
+verify_task_completion() {
+    local changed_files="$1"
+    local force_completion="${2:-false}"
+    local task_name="${3:-current task}"
+    
+    echo "🎯 Starting task completion verification for: $task_name"
+    echo "=================================================="
+    
+    # Step 1: Documentation verification
+    if ! check_task_completion_allowed "$changed_files" "$force_completion"; then
+        echo "❌ Task completion blocked due to documentation requirements"
+        return 1
+    fi
+    
+    # Step 2: Basic file validation (if files specified)
+    if [ -n "$changed_files" ]; then
+        echo ""
+        echo "📁 Verifying changed files exist and are valid..."
+        local invalid_files=false
+        echo "$changed_files" | tr ',' '\n' | while read -r file; do
+            if [ -n "$file" ] && [ ! -f "$file" ]; then
+                echo "❌ File not found: $file"
+                invalid_files=true
+            fi
+        done
+        
+        if [ "$invalid_files" = "true" ]; then
+            echo "❌ Some specified files do not exist"
+            return 1
+        fi
+        echo "✅ All specified files are valid"
+    fi
+    
+    # Step 3: Git status check (if in git repository)
+    if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+        echo ""
+        echo "📝 Checking git repository status..."
+        
+        local uncommitted_changes=$(git diff --name-only HEAD 2>/dev/null | wc -l)
+        local staged_changes=$(git diff --cached --name-only 2>/dev/null | wc -l)
+        
+        if [ "$uncommitted_changes" -gt 0 ] || [ "$staged_changes" -gt 0 ]; then
+            echo "⚠️ Git repository has uncommitted changes:"
+            if [ "$staged_changes" -gt 0 ]; then
+                echo "  📋 Staged changes: $staged_changes files"
+            fi
+            if [ "$uncommitted_changes" -gt 0 ]; then
+                echo "  📝 Unstaged changes: $uncommitted_changes files"
+            fi
+            echo "💡 Consider committing changes before marking task complete"
+        else
+            echo "✅ Git repository is clean"
+        fi
+    fi
+    
+    echo ""
+    echo "✅ Task completion verification successful for: $task_name"
+    echo "🎉 Task is ready to be marked as complete!"
+    
+    return 0
+}
+
+# Documentation verification functions
+# Integration with documentation detection for task completion
+
+# Enhanced task completion with documentation verification
+enhanced_task_completion() {
+    local task_name="$1"
+    local story_file="$2"
+    local changes_made="$3"
+    
+    echo "🎯 Enhanced task completion with documentation verification"
+    echo "📋 Task: $task_name"
+    echo "📄 Story: $story_file"
+    
+    # Step 1: Run standard task completion verification
+    if ! verify_task_completion "$task_name"; then
+        echo "❌ Standard task completion verification failed"
+        return 1
+    fi
+    
+    # Step 2: Documentation verification
+    if ! verify_documentation_requirements "$changes_made"; then
+        echo "❌ Documentation verification failed"
+        echo "🚫 Task completion blocked until documentation is updated"
+        return 1
+    fi
+    
+    # Step 3: Update story file with enhanced completion information
+    if ! update_story_with_documentation_status "$story_file" "$task_name" "$changes_made"; then
+        echo "⚠️ Warning: Could not update story file with documentation status"
+        echo "💡 Please manually verify story file is updated with completion information"
+    fi
+    
+    echo ""
+    echo "✅ Enhanced task completion successful for: $task_name"
+    echo "📚 Documentation requirements verified"
+    echo "🎉 Task is ready for review!"
+    
+    return 0
+}
+
+# Verify documentation requirements for changes
+verify_documentation_requirements() {
+    local changes_made="$1"
+    
+    echo "📚 Verifying documentation requirements..."
+    
+    # Load documentation detection functions if available
+    if [ -f "core/scripts/doc-detection.sh" ]; then
+        source "core/scripts/doc-detection.sh"
+        
+        # Check if changes require documentation updates
+        local docs_needed
+        if [ -n "$changes_made" ]; then
+            docs_needed=$(check_documentation_needs "$changes_made")
+        else
+            docs_needed=$(check_documentation_needs "")
+        fi
+        
+        if [ $? -eq 0 ] && [ -n "$docs_needed" ]; then
+            echo "📝 Documentation updates may be required:"
+            echo "$docs_needed"
+            
+            # Check if documentation has been updated
+            if ! verify_documentation_currency "$changes_made"; then
+                echo "❌ Documentation currency verification failed"
+                return 1
+            fi
+        else
+            echo "✅ No documentation updates required for these changes"
+        fi
+    else
+        echo "⚠️ Documentation detection not available - skipping documentation verification"
+        echo "💡 Install doc-detection.sh for comprehensive documentation verification"
+    fi
+    
+    return 0
+}
+
+# Verify documentation currency
+verify_documentation_currency() {
+    local changes_made="$1"
+    
+    echo "🔍 Checking documentation currency..."
+    
+    # Basic git-based currency check
+    if command -v git &> /dev/null && git rev-parse --git-dir > /dev/null 2>&1; then
+        local doc_files_changed=$(git diff --name-only HEAD~1 2>/dev/null | grep -E '\.(md|txt|rst)$' | wc -l || echo 0)
+        local code_files_changed=$(git diff --name-only HEAD~1 2>/dev/null | grep -E '\.(js|ts|sh|json|yaml|yml)$' | wc -l || echo 0)
+        
+        if [ "$code_files_changed" -gt 0 ] && [ "$doc_files_changed" -eq 0 ]; then
+            echo "⚠️ Code files changed but no documentation files updated in recent commits"
+            echo "💡 Consider updating documentation to reflect code changes"
+            # Don't fail here - make it a warning for now
+        else
+            echo "✅ Documentation appears current with recent changes"
+        fi
+    else
+        echo "ℹ️ Git not available - cannot verify documentation currency automatically"
+    fi
+    
+    return 0
+}
+
+# Update story file with documentation status
+update_story_with_documentation_status() {
+    local story_file="$1"
+    local task_name="$2"
+    local changes_made="$3"
+    
+    if [ ! -f "$story_file" ]; then
+        echo "⚠️ Story file not found: $story_file"
+        return 1
+    fi
+    
+    # Create backup
+    cp "$story_file" "${story_file}.backup"
+    
+    # Add documentation verification status to Dev Agent Record
+    local doc_status="Documentation verification completed on $(date)"
+    
+    # Look for Dev Agent Record section
+    if grep -q "## Dev Agent Record" "$story_file"; then
+        # Add documentation status to existing section
+        if grep -q "### Debug Log References" "$story_file"; then
+            sed -i.tmp "/### Debug Log References/a\\
+- $doc_status" "$story_file"
+            rm -f "${story_file}.tmp"
+        else
+            # Add to end of Dev Agent Record section
+            sed -i.tmp "/## Dev Agent Record/a\\
+\\
+### Debug Log References\\
+- $doc_status" "$story_file"
+            rm -f "${story_file}.tmp"
+        fi
+    else
+        # Create Dev Agent Record section
+        echo "" >> "$story_file"
+        echo "## Dev Agent Record" >> "$story_file"
+        echo "" >> "$story_file"
+        echo "### Debug Log References" >> "$story_file"
+        echo "- $doc_status" >> "$story_file"
+    fi
+    
+    echo "✅ Story file updated with documentation verification status"
+    return 0
+}
+
+# Legacy task completion wrapper that maintains backward compatibility
+legacy_task_completion_wrapper() {
+    local task_name="$1"
+    
+    # Call original task completion if documentation verification is disabled
+    if [ "${DOCUMENTATION_VERIFICATION:-true}" = "false" ]; then
+        verify_task_completion "$task_name"
+    else
+        # Call enhanced task completion with documentation verification
+        enhanced_task_completion "$task_name" "" ""
+    fi
+}
+
+# AI Documentation Analysis Helper Functions
+
+# Generate AI prompt for documentation analysis
+generate_documentation_analysis_prompt() {
+    local documentation_files="$1"
+    local code_files="$2"
+    
+    cat << EOF
+Please analyze the documentation files against the current codebase and provide a comprehensive assessment.
+
+Documentation Files to Analyze:
+$documentation_files
+
+Related Code Files:
+$code_files
+
+Please provide:
+
+1. **Documentation Freshness Assessment**
+   - Rate overall documentation currency (1-10 scale)
+   - Identify outdated sections that need updates
+   - List new features missing from documentation
+
+2. **Content Gap Analysis**
+   - Missing documentation for existing functionality
+   - Incomplete sections that need expansion
+   - Areas where documentation doesn't match implementation
+
+3. **Accuracy Verification**
+   - Code examples that no longer work
+   - Configuration instructions that are outdated
+   - Links or references that may be broken
+
+4. **Improvement Suggestions**
+   - Specific content additions needed
+   - Structural improvements for better organization
+   - Examples or clarifications that would help users
+
+5. **Priority Recommendations**
+   - Critical gaps that must be addressed immediately
+   - Important improvements for next documentation cycle
+   - Minor enhancements for future consideration
+
+Please be specific and actionable in your recommendations.
+EOF
+}
+
+# Process AI documentation analysis output
+process_documentation_ai_output() {
+    local output_file="$1"
+    
+    echo "🔍 Processing AI documentation analysis results..."
+    
+    # Add analysis timestamp and metadata
+    local temp_file=$(mktemp)
+    cat > "$temp_file" << EOF
+# AI Documentation Analysis Report
+
+**Generated:** $(date)
+**AI Tool:** $AI_TOOL
+**Analysis Type:** Documentation Freshness and Gap Analysis
+
+---
+
+EOF
+    
+    cat "$output_file" >> "$temp_file"
+    mv "$temp_file" "$output_file"
+    
+    echo "📊 AI documentation analysis report updated: $output_file"
+}
+
+# Create fallback documentation analysis when AI fails
+create_documentation_analysis_fallback() {
+    local output_file="$1"
+    local documentation_files="$2"
+    
+    cat > "$output_file" << EOF
+# Documentation Analysis Report - Manual Template
+
+**Generated:** $(date)
+**Status:** Manual completion required (AI analysis failed)
+
+---
+
+## Documentation Files Analyzed
+$documentation_files
+
+## Manual Analysis Required
+
+### 1. Documentation Freshness Assessment
+- [ ] Review each documentation file for currency
+- [ ] Compare documented features against implementation
+- [ ] Identify outdated examples or procedures
+- [ ] Rate documentation freshness (1-10 scale)
+
+### 2. Content Gap Analysis
+- [ ] Identify missing documentation for new features
+- [ ] Find incomplete sections needing expansion
+- [ ] Locate areas where docs don't match implementation
+- [ ] Document gaps in user guidance
+
+### 3. Accuracy Verification
+- [ ] Test all code examples and procedures
+- [ ] Verify configuration instructions work
+- [ ] Check all links and references
+- [ ] Validate troubleshooting information
+
+### 4. Improvement Recommendations
+- [ ] List specific content additions needed
+- [ ] Suggest structural improvements
+- [ ] Identify helpful examples to add
+- [ ] Recommend clarity improvements
+
+### 5. Priority Assessment
+- [ ] Critical gaps requiring immediate attention
+- [ ] Important improvements for next cycle
+- [ ] Minor enhancements for future consideration
+
+---
+*Complete this manual analysis since AI analysis was unavailable*
+EOF
+    
+    echo "📝 Documentation analysis fallback template created: $output_file"
+}
+
+# AI-powered documentation verification for task completion
+ai_enhanced_documentation_verification() {
+    local changed_files="$1"
+    local ai_tool="${2:-$AI_TOOL}"
+    
+    echo "🤖 Running AI-enhanced documentation verification..."
+    
+    if [ -z "$changed_files" ]; then
+        echo "ℹ️ No changed files specified, running general documentation analysis"
+        changed_files=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
+    fi
+    
+    # Generate documentation requirements analysis
+    local doc_requirements=$(check_documentation_needs "$changed_files")
+    
+    if [ -n "$doc_requirements" ]; then
+        echo "📋 Documentation requirements detected:"
+        echo "$doc_requirements"
+        
+        # Run AI analysis on documentation needs
+        echo "🤖 Analyzing documentation requirements with AI..."
+        local ai_analysis=$(generate_documentation_suggestions "$doc_requirements" "$changed_files" "$ai_tool")
+        
+        if [ $? -eq 0 ]; then
+            echo "💡 AI-generated documentation improvement suggestions:"
+            echo "$ai_analysis"
+            
+            # Check if suggestions indicate critical gaps
+            if echo "$ai_analysis" | grep -qi "critical\|urgent\|missing\|required"; then
+                echo ""
+                echo "⚠️ AI analysis indicates critical documentation gaps"
+                echo "📋 Review AI suggestions above before proceeding"
+                return 1
+            else
+                echo ""
+                echo "✅ AI analysis suggests documentation is acceptable"
+                echo "💡 Consider implementing suggested improvements when possible"
+                return 0
+            fi
+        else
+            echo "⚠️ AI analysis failed, falling back to basic verification"
+            return check_task_completion_allowed "$changed_files"
+        fi
+    else
+        echo "✅ No documentation requirements detected for these changes"
+        return 0
+    fi
+}
+
+# Generate contextual AI prompts for specific documentation tasks
+generate_contextual_documentation_prompt() {
+    local task_type="$1"
+    local context="$2"
+    
+    case "$task_type" in
+        "freshness")
+            echo "Analyze documentation freshness for: $context. Compare against current implementation and identify outdated content, missing information, and accuracy issues. Provide specific, actionable recommendations."
+            ;;
+        "gaps")
+            echo "Identify documentation gaps for changes in: $context. List missing documentation, incomplete sections, and areas needing updates. Prioritize by user impact and provide content suggestions."
+            ;;
+        "suggestions")
+            echo "Generate documentation improvement suggestions for: $context. Provide specific content recommendations, structural improvements, and examples that would enhance user understanding."
+            ;;
+        "validation")
+            echo "Validate documentation accuracy for: $context. Check that documented procedures work, examples are current, and information matches actual implementation. Identify any discrepancies."
+            ;;
+        *)
+            echo "Analyze documentation for: $context. Provide comprehensive assessment including freshness, gaps, accuracy, and improvement suggestions."
+            ;;
+    esac
 }

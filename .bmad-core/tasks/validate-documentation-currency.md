@@ -42,6 +42,12 @@ For each documentation file in scope:
 - Check that screenshots and UI descriptions match current interface
 - Validate that workflow descriptions match actual process
 
+#### AI-Powered Analysis
+- Use AI analysis to compare documentation against current codebase
+- Generate suggestions for documentation improvements
+- Identify potential inconsistencies between docs and implementation
+- Analyze documentation completeness and accuracy
+
 #### Completeness Assessment
 - Identify new features missing from documentation
 - Check if deprecated features are removed from docs
