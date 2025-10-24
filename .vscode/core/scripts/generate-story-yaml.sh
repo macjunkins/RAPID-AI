@@ -210,22 +210,41 @@ echo ""
 # Create temp file for Claude output
 TEMP_OUTPUT=$(mktemp)
 
-# Call Claude with timeout
-if timeout 60s claude -p "$PROMPT" > "$TEMP_OUTPUT" 2>&1; then
+# Call Claude with portable timeout implementation
+# Note: 'timeout' command not available on macOS by default
+# Using background process with kill as portable alternative
+claude -p "$PROMPT" > "$TEMP_OUTPUT" 2>&1 &
+CLAUDE_PID=$!
+
+# Wait up to 60 seconds for Claude to complete
+TIMEOUT=60
+ELAPSED=0
+while kill -0 "$CLAUDE_PID" 2>/dev/null && [ $ELAPSED -lt $TIMEOUT ]; do
+    sleep 1
+    ELAPSED=$((ELAPSED + 1))
+done
+
+# Check if process is still running (timeout occurred)
+if kill -0 "$CLAUDE_PID" 2>/dev/null; then
+    echo "⏱️  Timeout: Claude CLI took longer than $TIMEOUT seconds"
+    echo "💡 Try again - API might be slow"
+    kill "$CLAUDE_PID" 2>/dev/null
+    rm -f "$TEMP_OUTPUT"
+    exit 1
+fi
+
+# Wait for process to finish and get exit code
+wait "$CLAUDE_PID"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
     echo "✅ Claude CLI completed successfully"
     echo ""
 else
-    EXIT_CODE=$?
     echo "❌ Claude CLI failed (exit code: $EXIT_CODE)"
     echo ""
-
-    if [ $EXIT_CODE -eq 124 ]; then
-        echo "⏱️  Timeout: Claude CLI took longer than 60 seconds"
-        echo "💡 Try again - API might be slow"
-    else
-        echo "📋 Error output:"
-        head -n 10 "$TEMP_OUTPUT" | sed 's/^/   /'
-    fi
+    echo "📋 Error output:"
+    head -n 10 "$TEMP_OUTPUT" | sed 's/^/   /'
 
     rm -f "$TEMP_OUTPUT"
     exit 1
