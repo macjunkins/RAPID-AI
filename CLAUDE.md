@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+> **Master specification** — This document is the canonical agent brief. `AGENTS.md` and every agent-specific file must inherit these requirements and stay in sync with updates made here.
+> **Claude style** — Respond with deliberate, richly detailed reasoning, surfacing trade-offs and internal checks before concluding.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
@@ -10,28 +13,92 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-### Three-Layer Design + BMAD Integration
+### Source vs Distribution Structure (NEW in Phase 1)
 
-1. **Core Framework** (`core/`): Language-agnostic shell scripts and AI integration
-   - `core/scripts/`: Primary automation scripts (ai-discovery.sh, ai-implementation-plan.sh, etc.)
-   - `core/workflows/`: Shared functions and systematic workflows
-   - `core/workflows/common-functions.sh`: Environment detection, AI tool abstraction, progress indicators
+**RAPID-AI now uses a clean src/dist separation for better maintainability:**
 
-2. **Adapters** (`adapters/`): Project-specific implementations
-   - `adapters/flutter/`: Flutter + BLoC + Drift adapter (production-proven from EmberCare)
+```
+RAPID-AI/
+├── src/                          # SOURCE CODE (source of truth)
+│   ├── core/                     # Execution framework
+│   │   ├── scripts/              # Primary automation scripts
+│   │   ├── workflows/            # Shared functions (common-functions.sh)
+│   │   └── config/               # Configuration (.ai-workflow.yaml)
+│   ├── adapters/                 # Project-specific implementations
+│   │   └── flutter/              # Flutter + BLoC + Drift adapter
+│   ├── prompts/                  # AI prompt templates (extracted)
+│   │   ├── story-generation.txt
+│   │   ├── discovery.txt
+│   │   └── implementation-plan.txt
+│   └── schemas/                  # YAML validation schemas
+│       ├── story-schema.yaml
+│       └── epic-schema.yaml
+│
+├── dist/                         # DISTRIBUTION BUNDLE
+│   └── .vscode/                  # Built from src/, ready to drop into any project
+│       ├── tasks.json
+│       ├── README.md
+│       ├── core/                 # Built execution framework
+│       ├── rapid/                # Built conversational framework
+│       ├── adapters/             # Built project-specific adapters
+│       ├── prompts/              # AI prompts
+│       └── schemas/              # YAML schemas (copied for validation)
+│
+├── scripts/                      # BUILD INFRASTRUCTURE
+│   ├── build-dist.sh             # Build dist/.vscode/ from src/
+│   ├── validate-structure.sh     # Validate distribution structure
+│   └── install-to-project.sh     # Install to target project
+│
+├── .vscode/                      # RAPID-AI's own .vscode (dogfooding)
+│   └── [Built from dist/ for self-development]
+│
+└── docs/                         # YAML specifications (epics, stories)
+```
+
+### Three-Layer Design
+
+1. **Core Framework** (`src/core/`): Language-agnostic shell scripts and AI integration
+   - `src/core/scripts/`: Primary automation scripts (ai-discovery.sh, ai-implementation-plan.sh, generate-story-yaml.sh)
+   - `src/core/workflows/`: Shared functions and systematic workflows
+   - `src/core/workflows/common-functions.sh`: Environment detection, AI tool abstraction, progress indicators
+   - `src/core/config/`: Configuration files (.ai-workflow.yaml)
+
+2. **Adapters** (`src/adapters/`): Project-specific implementations
+   - `src/adapters/flutter/`: Flutter + BLoC + Drift adapter (production-proven from EmberCare)
    - Future: React, Python, Go adapters
 
-3. **Templates & CLI** (`templates/`, `src/`):
-   - `templates/vscode/tasks.json`: VS Code tasks (primary interface)
-   - `src/cli.js`: Optional CLI wrapper for command-line users
+3. **Prompts & Schemas** (`src/prompts/`, `src/schemas/`):
+   - `src/prompts/`: AI prompt templates extracted from scripts for easier maintenance
+   - `src/schemas/`: YAML schemas documenting story and epic structures
 
-4. **BMAD Method Integration** (`.bmad-core/`, `.bmad-infrastructure-devops/`):
-   - Agent definitions with structured roles (dev, architect, pm, qa, etc.)
-   - Systematic workflows and tasks extracted from BMAD methodology
-   - **Documentation workflow integration**: Mandatory documentation verification before task completion
-   - Quality checklists and document templates
+4. **RAPID Conversational Framework** (`src/rapid/`) - NEW in Phase 2:
+   - Unified conversational workflows for discovery, planning, and documentation
+   - Agent definition with structured commands (rapid-master.md)
+   - 26 systematic workflow tasks (brownfield, documentation, elicitation)
+   - 13 YAML templates (PRD, story, architecture, etc.)
+   - 7 quality checklists (story-dod, documentation-currency, etc.)
+   - 6 workflow definitions (brownfield/greenfield × fullstack/service/ui)
+   - Knowledge base with brainstorming techniques, elicitation methods, test frameworks
+   - **Documentation workflow integration**: Optional documentation verification before task completion
 
 ## Development Commands
+
+### Build System (NEW in Phase 1)
+```bash
+# Build distribution from source (uses src/** + templates/vscode)
+./scripts/build-dist.sh
+
+# Validate distribution structure
+./scripts/validate-structure.sh
+
+# Install to target project (e.g., EmberCare)
+./scripts/install-to-project.sh /path/to/project
+
+# Rebuild RAPID-AI's own .vscode/ (dogfooding)
+./scripts/build-dist.sh && cp -r dist/.vscode/* .vscode/
+
+# Canonical VS Code assets live in templates/vscode/ and are copied into dist/.vscode/
+```
 
 ### Framework Development
 ```bash
@@ -40,11 +107,18 @@ npm run dev            # Watch mode for CLI development
 npm test               # Run test suite
 ```
 
-### BMAD Integration
+### RAPID Conversational Mode (NEW in Phase 2)
 ```bash
-npm run bmad:refresh   # Regenerate AGENTS.md from .bmad-core/
-npm run bmad:list      # List available agents
-npm run bmad:validate  # Validate BMAD configuration
+# Activate RAPID conversational agent in Claude CLI
+claude /rapid
+
+# Available commands (within RAPID mode)
+*help                        # Show all available commands
+*create-doc {template}       # Create document from template
+*task {task}                 # Execute workflow task
+*execute-checklist {list}    # Run quality checklist
+*document-project            # Brownfield project documentation
+*kb                          # Toggle knowledge base mode
 ```
 
 ### CLI Usage (Secondary Interface)
@@ -57,18 +131,16 @@ npx rapid setup 1 4 "User Authentication"
 
 ### VS Code Tasks (Primary Interface)
 Access via Command Palette (`Cmd+Shift+P`):
-- **AI Workflow: Analyze Story** - Run AI-powered story analysis
-- **AI Workflow: Generate Implementation Plan** - Create implementation plan
-- **AI Workflow: Flutter Analysis** - Flutter-specific analysis (requires Flutter adapter)
-- **AI Workflow: Complete Story Setup** - Run full workflow (analysis → plan → documentation)
-- **Systematic: Project Analysis** - Brownfield codebase analysis
-- **Systematic: Quality Checklist** - Interactive quality validation
-- **Systematic: Document Generator** - Automated documentation generation
+- **RAPID: Conversational Mode - Instructions** — How to launch `/rapid` inside Claude
+- **RAPID: Create Document / Execute Task / Run Checklist** — Generate conversational commands for templates, tasks, or checklists
+- **RAPID: Generate Story from Epic** — Claude-powered story YAML generation
+- **RAPID: Test Claude CLI** — Ensure CLI dependencies are available
+- **RAPID: Validate YAML Files / Query All Stories / Show Epic Summary** — Execution-mode utilities backed by `yq`
 
 ## Critical Patterns
 
 ### VS Code Tasks Integration
-Tasks provide parameterized inputs using `${input:epic}`, `${input:story}`, `${input:title}` variables. Problem matchers detect workflow errors with patterns like `"❌\\s+(.+)$"`. Tasks call shell scripts directly without requiring npm installation.
+Canonical definitions live in `templates/vscode/tasks.json` and are synced into `dist/.vscode/tasks.json` during the build. Tasks provide parameterized inputs (`${input:epic}`, `${input:rapidTemplate}`, etc.), print ready-to-run conversational commands, and shell out to `.vscode/core/scripts/*.sh` for execution workflows.
 
 ### AI Tool Abstraction
 AI tools are abstracted through `run_ai_analysis()` in `core/workflows/common-functions.sh`:
@@ -124,12 +196,13 @@ Generated in `docs/discovery/story-{epic}-{story}-discovery.md` with:
 - Implementation file lists with exact paths
 - Testing strategies appropriate to the architecture
 
-### BMAD Integration Outputs
-- `.bmad-core/agents/`: Agent definitions (dev, architect, pm, qa, etc.)
-- `.bmad-core/tasks/`: Reusable workflow tasks including documentation workflow
-- `.bmad-core/checklists/`: Validation checklists (story-dod-checklist, documentation-currency-checklist)
-- `.bmad-core/templates/`: Document templates
-- `AGENTS.md`: Auto-generated agent summaries (regenerated via `npm run bmad:refresh`)
+### RAPID Conversational Framework Outputs
+- `src/rapid/agents/`: Unified agent definition (rapid-master.md)
+- `src/rapid/tasks/`: 26 reusable workflow tasks including documentation workflows
+- `src/rapid/checklists/`: 7 validation checklists (story-dod, documentation-currency, etc.)
+- `src/rapid/templates/`: 13 YAML document templates (PRD, story, architecture, etc.)
+- `src/rapid/workflows/`: 6 workflow definitions for brownfield/greenfield projects
+- `src/rapid/data/`: Knowledge base with elicitation methods, brainstorming techniques, test frameworks
 
 ## Documentation Workflow Integration
 
@@ -150,8 +223,8 @@ The framework includes **optional documentation verification** integrated into d
    - AI-powered gap analysis with actionable recommendations
 
 3. **Documentation Currency Checklist** (`core/checklists/documentation-currency-checklist.md`):
-   - Comprehensive systematic validation across all documentation dimensions
-   - Generalized from BMAD patterns for any project type
+  - Comprehensive systematic validation across all documentation dimensions
+  - Generalized from EmberCare production patterns for any project type
    - Project-type specific sections via adapters
    - Severity-based prioritization
 
@@ -233,7 +306,7 @@ Framework extraction maintains 100% compatibility with existing EmberCare script
 ❌ **Don't** break EmberCare compatibility - it's the proven reference implementation
 ❌ **Don't** implement AI integrations in TypeScript - shell scripts are more portable
 ❌ **Don't** bypass VS Code tasks as primary interface - CLI is secondary convenience
-❌ **Don't** modify BMAD branding in extracted content - remove it cleanly
+❌ **Don't** reintroduce legacy BMAD branding in new code - stay RAPID-AI only
 
 ## Project Type Detection
 

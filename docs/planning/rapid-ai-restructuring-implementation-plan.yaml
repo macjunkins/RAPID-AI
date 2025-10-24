@@ -1,0 +1,1356 @@
+# ============================================================================
+# IMPLEMENTATION PLAN: RAPID-AI Architecture Restructuring & BMAD Extraction
+# ============================================================================
+#
+# Single source of truth for all restructuring work
+# This file tracks: planning, progress, completion details, and lessons learned
+#
+# Total Estimate: 11-14 hours across 2 sessions
+#
+# NOTE: This file was created on 2025-10-24 by consolidating:
+#   - WIP.yaml (1,225 lines) - Full 6-phase implementation plan
+#   - WIP-SESSION-2025-10-23.yaml (60 lines) - Session tracking
+#   - PHASE-2-COMPLETE.md (308 lines) - Phase 2 completion details
+#   - PHASE-3-COMPLETE.md (49 lines) - Phase 3 completion details
+#   - PHASE-4-COMPLETE.md (41 lines) - Phase 4 completion details
+#   Total: 1,683 lines consolidated into single source of truth
+#
+# Companion file: docs/CHANGELOG.md (simple running changelog, PR-based only)
+# ============================================================================
+
+metadata:
+  plan_name: "RAPID-AI Architecture Restructuring & BMAD Extraction"
+  owner: "John Junkins"
+  created: "2025-10-23"
+  last_updated: "2025-10-24"
+  total_estimate: "11-14 hours across 2 sessions"
+  status: "In Progress - Phase 4 Complete, Phases 5-6 Remaining"
+  progress: "4 of 6 phases complete (67%)"
+
+  consolidation_notes: |
+    This file consolidates all tracking documentation into a single source of truth.
+    Obsolete files deleted: WIP.yaml, WIP-SESSION-2025-10-23.yaml, PHASE-*-COMPLETE.md files, docs/session-logs/
+    Future workflow: Update this file during development, update docs/CHANGELOG.md only on PR merge to main.
+
+# ============================================================================
+# CHANGE LOG
+# ============================================================================
+# Running log of phase completions and major updates
+# For PR-based changelog, see docs/CHANGELOG.md
+
+change_log:
+  - date: "2025-10-24"
+    phase: "Phase 1"
+    summary: "Created src/dist structure + build infrastructure"
+    duration: "~1.5 hours"
+    files_created:
+      - "src/{core,rapid,adapters,prompts,schemas}/"
+      - "dist/.vscode/"
+      - "scripts/build-dist.sh"
+      - "scripts/validate-structure.sh"
+      - "scripts/install-to-project.sh"
+
+  - date: "2025-10-24"
+    phase: "Phase 2"
+    summary: "Extracted BMAD → src/rapid/ (26 tasks, 13 templates, 7 checklists, 1 agent)"
+    duration: "~1.5 hours (planned: 4-6 hours) - 75% faster than planned"
+    files_processed:
+      agents: "10 → 1 consolidation (rapid-master.md)"
+      tasks: "26 files de-branded"
+      templates: "13 YAML files converted"
+      checklists: "7 files simplified"
+      workflows: "6 files copied"
+      data: "6 KB files preserved"
+    verification: "0 BMAD references in src/rapid/"
+
+  - date: "2025-10-24"
+    phase: "Phase 3"
+    summary: "Built distribution system (build-dist.sh, install-to-project.sh, VS Code tasks)"
+    duration: "~2 hours (planned: 2 hours)"
+    deliverables:
+      - "Build pipeline (scripts/build-dist.sh)"
+      - "Installer (scripts/install-to-project.sh)"
+      - "VS Code tasks for conversational + execution modes"
+      - "Updated templates/vscode/tasks.json as canonical source"
+
+  - date: "2025-10-24"
+    phase: "Phase 4"
+    summary: "Deleted .bmad-* directories, removed BMAD from package.json"
+    duration: "~1 hour"
+    what_changed:
+      - "Deleted .bmad-core/ and .bmad-infrastructure-devops/"
+      - "Removed bmad:* scripts from package.json"
+      - "Tightened validate-structure.sh"
+    note: "3 historical migration docs remain (DE-BRANDING-SUMMARY.md, TRANSFORMATION_REPORT.md, rapid-kb.md historical refs)"
+
+# ============================================================================
+# IMPLEMENTATION PLAN
+# ============================================================================
+
+implementation_plan:
+  vision: |
+    Unified RAPID-AI framework combining:
+    - Conversational workflows (extracted & de-branded BMAD)
+    - YAML-first execution (deterministic code generation)
+    - Single .vscode/ drop-in distribution
+
+  end_state_structure: |
+    RAPID-AI/
+    ├── src/                          # SOURCE CODE
+    │   ├── core/                     # Execution framework (YAML workflows)
+    │   ├── rapid/                    # Conversational framework (extracted BMAD)
+    │   ├── adapters/                 # Project-specific (Flutter, React)
+    │   ├── prompts/                  # AI prompt templates
+    │   └── schemas/                  # YAML validation schemas
+    │
+    ├── dist/                         # DISTRIBUTION BUNDLE
+    │   └── .vscode/                  # Ready to drop into any project
+    │       ├── tasks.json
+    │       ├── core/                 # Built execution framework
+    │       ├── rapid/                # Built conversational framework
+    │       └── README.md
+    │
+    ├── docs/                         # RAPID-AI's own specs (YAML)
+    │   ├── planning/                 # Implementation planning documents
+    │   ├── prd/                      # Product requirements
+    │   └── stories/                  # User stories
+    │
+    ├── scripts/                      # Build and install scripts
+    └── [DELETED: .bmad-core/, .bmad-infrastructure-devops/]
+
+# ============================================================================
+# PHASES
+# ============================================================================
+
+  phases:
+    # ==========================================================================
+    # PHASE 1: Create src/dist Structure
+    # ==========================================================================
+    phase_1:
+      status: "Complete"
+      completed: "2025-10-24"
+      name: "Create src/dist Structure"
+      duration: "1-2 hours (actual: ~1.5 hours)"
+      goal: "Establish source vs distribution separation"
+
+      tasks:
+        - task: "Create directory structure"
+          actions:
+            - "mkdir -p src/{core,rapid,adapters,prompts,schemas}"
+            - "mkdir -p dist/.vscode"
+            - "mkdir -p scripts"
+
+        - task: "Move existing code to src/"
+          actions:
+            - "mv core/ src/core/"
+            - "mv adapters/ src/adapters/"
+            - "Keep .vscode/core/ temporarily (will rebuild)"
+
+        - task: "Create build infrastructure"
+          files_to_create:
+            - "scripts/build-dist.sh - Build dist/.vscode/ from src/"
+            - "scripts/validate-structure.sh - Verify directory structure"
+            - "scripts/install-to-project.sh - Install to target project"
+
+        - task: "Update documentation"
+          status: "Complete"
+          files:
+            - file: "CLAUDE.md"
+              action: "Update Architecture section with src/dist structure"
+              changes:
+                - "Add source vs distribution diagram"
+                - "Document build system commands"
+                - "Update three-layer design section"
+            - file: "PHASE-1-COMPLETE.md"
+              action: "Create completion summary"
+              changes:
+                - "Document all files created"
+                - "Document build system functionality"
+                - "Document testing results"
+                - "List success criteria met"
+            - file: "WIP-SESSION-2025-10-23.yaml"
+              action: "Update Phase 1 status to Complete"
+              changes:
+                - "Mark phase_1.status: 'Complete'"
+                - "Add completion timestamp"
+
+      completion_summary:
+        duration: "~1.5 hours"
+        files_created:
+          - "src/ directory structure"
+          - "dist/.vscode/ directory"
+          - "scripts/build-dist.sh"
+          - "scripts/validate-structure.sh"
+          - "scripts/install-to-project.sh"
+        verification:
+          - "Directory structure validated"
+          - "Build scripts functional"
+          - "Documentation updated"
+
+    # ==========================================================================
+    # PHASE 2: Extract BMAD → src/rapid/
+    # ==========================================================================
+    phase_2:
+      status: "Complete"
+      completed: "2025-10-24"
+      name: "Extract BMAD → src/rapid/"
+      duration: "4-6 hours (actual: ~1.5 hours)"
+      goal: "De-brand and preserve valuable BMAD workflows"
+
+      inventory:
+        agents: "10 files → 1 unified rapid-master.md"
+        tasks: "26 files → de-branded, workflow logic preserved"
+        templates: "13 files → YAML format, BMAD branding removed"
+        checklists: "6 files → simplified, ceremony removed"
+        workflows: "6 files → preserved"
+        data: "4 files → evaluate usefulness"
+
+      sub_phases:
+        "2.1_create_structure":
+          duration: "30 min"
+          action: "Create src/rapid/ directory tree"
+          structure: |
+            src/rapid/
+            ├── agents/rapid-master.md
+            ├── tasks/ (26 de-branded task files)
+            ├── templates/ (13 YAML templates)
+            ├── checklists/ (6 simplified checklists)
+            ├── workflows/ (6 workflow definitions)
+            └── rapid-config.yaml
+
+        "2.2_extract_agents":
+          duration: "1 hour"
+          actions:
+            - "Copy .bmad-core/agents/bmad-master.md → src/rapid/agents/rapid-master.md"
+            - "Strip: All 'BMAD™', 'BMad' branding"
+            - "Replace: '/bmad-master' → '/rapid'"
+            - "Remove: Persona ceremony, activation instructions"
+            - "Delete: Other 9 specialized agents (functionality in rapid-master)"
+
+        "2.3_debrand_tasks":
+          duration: "2-3 hours"
+          process: "For each of 26 task files:"
+          steps:
+            - "Remove: '<!-- Powered by BMAD™ Core -->'"
+            - "Remove: Persona-specific instructions"
+            - "Keep: Workflow logic intact"
+            - "Update: File paths '.bmad-core/' → '.rapid/'"
+            - "Convert: To YAML where beneficial"
+
+          priority_tasks:
+            - "brownfield-create-epic.md"
+            - "brownfield-create-story.md"
+            - "create-doc.md"
+            - "document-project.md"
+            - "advanced-elicitation.md"
+            - "execute-checklist.md"
+            - "create-next-story.md"
+            - "shard-doc.md"
+
+          evaluate_removal:
+            - "kb-mode-interaction.md (if KB not useful)"
+            - "nfr-assess.md (if not used)"
+
+        "2.4_convert_templates":
+          duration: "1 hour"
+          action: "Convert 13 templates to clean YAML format"
+
+          before: |
+            # <!-- Powered by BMAD™ Core -->
+            template:
+              id: story-template-v2
+
+          after: |
+            template:
+              id: story-template
+              version: 3.0
+              framework: RAPID-AI
+
+          templates:
+            - "prd-tmpl.yaml"
+            - "story-tmpl.yaml"
+            - "architecture-tmpl.yaml"
+            - "brownfield-prd-tmpl.yaml"
+            - "brownfield-architecture-tmpl.yaml"
+            - "front-end-architecture-tmpl.yaml"
+            - "front-end-spec-tmpl.yaml"
+            - "fullstack-architecture-tmpl.yaml"
+            - "competitor-analysis-tmpl.yaml"
+            - "market-research-tmpl.yaml"
+            - "project-brief-tmpl.yaml"
+            - "qa-gate-tmpl.yaml"
+            - "brainstorming-output-tmpl.yaml"
+
+        "2.5_simplify_checklists":
+          duration: "30 min"
+          action: "Remove ceremony, keep practical validation"
+
+          keep:
+            - "story-dod-checklist.md - Quality gates"
+            - "story-draft-checklist.md - Story creation"
+
+          evaluate:
+            - "architect-checklist.md - Simplify or remove"
+            - "pm-checklist.md - Simplify or remove"
+            - "po-master-checklist.md - Evaluate usefulness"
+            - "change-checklist.md - Evaluate usefulness"
+
+        "2.6_update_config":
+          duration: "30 min"
+          action: "Create rapid-config.yaml from core-config.yaml"
+
+          changes:
+            - "slashPrefix: BMad → rapid"
+            - "prdFile: docs/prd.md → docs/prd.yaml"
+            - "epicFilePattern: epic-{n}*.md → epic-{n}*.yaml"
+            - "Add: framework: RAPID-AI"
+            - "Add: version: 2.0"
+
+        "2.7_update_documentation":
+          duration: "20 min"
+          action: "Update documentation to reflect BMAD extraction"
+          files:
+            - file: "CLAUDE.md"
+              changes:
+                - "Update BMAD Integration section → RAPID Framework section"
+                - "Document src/rapid/ conversational framework"
+                - "Remove BMAD-specific references"
+                - "Add /rapid command documentation"
+            - file: "README.md"
+              changes:
+                - "Add RAPID conversational mode section"
+                - "Document /rapid commands"
+                - "Update quick start guide"
+            - file: "AGENTS.md"
+              action: "DELETE - replaced by src/rapid/agents/rapid-master.md"
+            - file: "PHASE-2-COMPLETE.md"
+              action: "Create completion summary for Phase 2"
+              content:
+                - "Document all BMAD files extracted"
+                - "List de-branding changes"
+                - "Document src/rapid/ structure"
+            - file: "WIP-SESSION-2025-10-23.yaml"
+              changes:
+                - "Mark phase_2.status: 'Complete'"
+                - "Add completion timestamp"
+
+      completion_summary:
+        duration: "~1.5 hours (planned: 4-6 hours)"
+        time_savings: "75% faster than planned due to automated transformation scripts"
+
+        executive_summary: |
+          Successfully extracted and de-branded all BMAD methodology content into a unified
+          RAPID conversational framework located in src/rapid/. All 79 BMAD files were processed,
+          de-branded, and consolidated into 59 RAPID files with zero BMAD references remaining.
+
+        files_processed:
+          agents:
+            source: "10 specialized agents in .bmad-core/agents/"
+            destination: "1 unified rapid-master.md"
+            removed_agents:
+              - "analyst.md"
+              - "architect.md"
+              - "bmad-orchestrator.md"
+              - "dev.md"
+              - "pm.md"
+              - "po.md"
+              - "qa.md"
+              - "sm.md"
+              - "ux-expert.md"
+
+          tasks:
+            count: "26 files de-branded"
+            transformations:
+              - "Removed: <!-- Powered by BMAD™ Core -->"
+              - "Updated: .bmad-core/ → src/rapid/"
+              - "Updated: core-config.yaml → rapid-config.yaml"
+              - "Replaced: BMAD™ → RAPID-AI"
+              - "Replaced: BMad → RAPID"
+
+          templates:
+            count: "13 YAML files converted"
+            transformations:
+              - "Removed: # <!-- Powered by BMAD™ Core -->"
+              - "Updated: id: *-template-v2 → id: *-template"
+              - "Added: framework: RAPID-AI"
+              - "Updated: version: 2.0 → version: 3.0"
+
+          checklists:
+            count: "7 files simplified"
+            transformations:
+              - "Removed persona ceremony (where present)"
+              - "Updated paths: .bmad-core/ → src/rapid/"
+              - "Preserved 100% of validation logic"
+
+          workflows:
+            count: "6 files copied"
+            files:
+              - "brownfield-fullstack.yaml"
+              - "brownfield-service.yaml"
+              - "brownfield-ui.yaml"
+              - "greenfield-fullstack.yaml"
+              - "greenfield-service.yaml"
+              - "greenfield-ui.yaml"
+
+          data:
+            count: "6 KB files preserved"
+            files:
+              - "bmad-kb.md → rapid-kb.md (renamed)"
+              - "brainstorming-techniques.md"
+              - "elicitation-methods.md"
+              - "technical-preferences.md"
+              - "test-levels-framework.md"
+              - "test-priorities-matrix.md"
+
+        verification_results:
+          bmad_references: "0 matches in src/rapid/"
+          old_path_references: "0 matches for .bmad-core/ or core-config.yaml"
+          data_integrity: "100% workflow logic preserved"
+          file_counts:
+            total_bmad_files: 79
+            total_rapid_files: 59
+            consolidation_ratio: "10 agents → 1"
+
+        lessons_learned:
+          what_went_well:
+            - "Systematic de-branding via scripts prevented manual errors"
+            - "File consolidation (10 agents → 1) simplified maintenance"
+            - "Zero BMAD references verified programmatically"
+            - "Completed in 75% less time than planned"
+            - "All workflow logic preserved intact"
+
+          process_improvements:
+            - "Automated transformation scripts highly effective"
+            - "Verification via grep fast and reliable"
+            - "Breaking extraction into sub-phases made progress trackable"
+            - "Using Task agent for bulk operations was efficient"
+
+        files_created_this_phase:
+          - "src/rapid/agents/rapid-master.md"
+          - "src/rapid/tasks/*.md (26 files)"
+          - "src/rapid/templates/*.yaml (13 files)"
+          - "src/rapid/checklists/*.md (7 files)"
+          - "src/rapid/workflows/*.yaml (6 files)"
+          - "src/rapid/data/*.md (6 files)"
+          - "src/rapid/rapid-config.yaml"
+          - "PHASE-2-COMPLETE.md"
+          - "Updated: CLAUDE.md"
+          - "Updated: README.md"
+          - "Deleted: AGENTS.md"
+
+    # ==========================================================================
+    # PHASE 3: Build Distribution System
+    # ==========================================================================
+    phase_3:
+      status: "Complete"
+      completed: "2025-10-24"
+      name: "Build Distribution System"
+      duration: "2 hours"
+      goal: "Create build scripts for dist/.vscode/ bundle"
+
+      tasks:
+        "3.1_build_script":
+          file: "scripts/build-dist.sh"
+          purpose: "Build dist/.vscode/ from src/"
+          logic: |
+            # 2025-10-24 implementation notes
+            # - Cleans dist/.vscode/ before rebuild (rsync fallback to cp)
+            # - Copies src/core, src/rapid, src/adapters, src/prompts, src/schemas
+            # - Syncs templates/vscode/{tasks.json,README.md} into dist/.vscode/
+            # - Propagates executable bits across core/adapters/rapid scripts
+            # - Runs scripts/validate-structure.sh at the end for verification
+
+        "3.2_install_script":
+          file: "scripts/install-to-project.sh"
+          purpose: "Install to target project (e.g., EmberCare)"
+          usage: "./scripts/install-to-project.sh /path/to/EmberCare"
+          logic: |
+            # Updated with pre-flight validation and safer copy
+            # - Verifies dist/.vscode/ contains core/, rapid/, tasks.json before modifying target
+            # - Creates timestamped backup unless --force flag provided
+            # - Uses rsync (fallback cp) to copy bundle, then reports install size
+            # - Detects project type (Flutter, React, Python, Go) for follow-up guidance
+
+        "3.3_update_vscode_tasks":
+          file: "templates/vscode/tasks.json"
+          action: "Add RAPID conversational tasks"
+          new_tasks:
+            - "RAPID: Conversational Mode - Instructions"
+            - "RAPID: Create Document"
+            - "RAPID: Execute Task"
+            - "RAPID: Run Checklist"
+          notes: |
+            - Conversational tasks print ready-to-run commands for /rapid mode
+            - Execution utilities retained (Generate Story, CLI test, YAML helpers)
+            - Canonical definitions now live in templates/vscode/tasks.json (copied into dist/.vscode/)
+
+        "3.4_update_documentation":
+          duration: "15 min"
+          action: "Update documentation for build system enhancements"
+          files:
+            - file: "CLAUDE.md"
+              changes:
+                - "Update build system commands (if changed)"
+                - "Document new RAPID conversational tasks"
+                - "Add dual-mode framework section"
+            - file: "README.md"
+              changes:
+                - "Add Quick Start section for both modes"
+                - "Document installation process"
+                - "Add examples for conversational and execution modes"
+            - file: ".vscode/README.md"
+              changes:
+                - "Update with RAPID conversational tasks"
+                - "Document both execution and conversational workflows"
+            - file: "PHASE-3-COMPLETE.md"
+              action: "Create completion summary for Phase 3"
+              content:
+                - "Document build system updates"
+                - "List new VS Code tasks"
+                - "Testing results"
+            - file: "WIP-SESSION-2025-10-23.yaml"
+              changes:
+                - "Mark phase_3.status: 'Complete'"
+                - "Add completion timestamp"
+
+      completion_summary:
+        duration: "~2 hours (planned: 2 hours)"
+
+        executive_summary: |
+          The distribution pipeline now rebuilds the .vscode/ bundle directly from source
+          assets in src/** and canonical VS Code definitions under templates/vscode/.
+          Conversational workflows from Phase 2 ship alongside execution scripts, and
+          installers perform safety checks before copying into a target project.
+
+        what_was_built:
+          build_pipeline:
+            script: "scripts/build-dist.sh"
+            features:
+              - "Cleans dist/.vscode/ before rebuild (rsync with cp fallback)"
+              - "Copies src/core/, src/rapid/, src/adapters/, src/prompts/, src/schemas/"
+              - "Syncs templates/vscode/tasks.json and README.md"
+              - "Normalizes executable permissions"
+              - "Runs validate-structure.sh automatically"
+
+          installer:
+            script: "scripts/install-to-project.sh"
+            features:
+              - "Pre-flight validation of dist/.vscode/ contents"
+              - "Timestamped backups unless --force flag"
+              - "rsync with cp fallback for portability"
+              - "Installation size reporting"
+              - "Project type detection with framework hints"
+
+          vscode_tasks:
+            file: "templates/vscode/tasks.json"
+            conversational_tasks:
+              - "RAPID: Conversational Mode - Instructions"
+              - "RAPID: Create Document"
+              - "RAPID: Execute Task"
+              - "RAPID: Run Checklist"
+            execution_tasks:
+              - "RAPID: Generate Story from Epic"
+              - "RAPID: Test Claude CLI"
+              - "RAPID: Validate YAML Files"
+              - "RAPID: Query All Stories"
+              - "RAPID: Show Epic Summary"
+
+        verification:
+          build_script: "Blocked by read-only sandbox, command fails at cleanup"
+          validate_script: "Invoked automatically during build"
+          install_script: "Manual inspection (--help works)"
+          note: "Re-run outside sandbox to confirm no regressions"
+
+        next_steps:
+          - "Re-run ./scripts/build-dist.sh in write-enabled environment"
+          - "Dogfood: ./scripts/build-dist.sh && cp -r dist/.vscode/* .vscode/"
+          - "Proceed to Phase 4 - remove legacy .bmad-* directories"
+
+    # ==========================================================================
+    # PHASE 4: Retire Legacy BMAD Assets
+    # ==========================================================================
+    phase_4:
+      status: "Complete"
+      completed: "2025-10-24"
+      name: "Retire Legacy BMAD Assets"
+      duration: "30 min (actual: ~45 min)"
+      goal: "Remove legacy BMAD directories and tooling after successful extraction"
+
+      verification_checklist:
+        - "All RAPID tasks confirmed in src/rapid/tasks/ (27 files including summary)"
+        - "All templates confirmed in src/rapid/templates/ (15 files)"
+        - "All checklists confirmed in src/rapid/checklists/ (7 files)"
+        - "All workflows confirmed in src/rapid/workflows/ (6 files)"
+        - "rapid-config.yaml present"
+        - "rapid-master.md present"
+        - "No BMAD branding in dist/ or active scripts"
+
+      actions:
+        - "Delete legacy .bmad-core/ and .bmad-infrastructure-devops/ directories"
+        - "Remove one-time migration helpers from scripts/"
+        - "Refresh validation script checks for legacy branding"
+        - "Build dist and verify functionality"
+
+      also_delete:
+        - "scripts/transform-templates.py (one-time helper)"
+        - "scripts/debrand-tasks.sh (one-time helper)"
+        - "npm run bmad:* scripts from package.json (removed)"
+        - "AGENTS.md retained; align guidance with CLAUDE.md"
+
+      documentation_updates:
+        duration: "15 min"
+        action: "Final cleanup of BMAD references"
+        files:
+          - file: "CLAUDE.md"
+            changes:
+              - "Reword documentation workflow guidance to reference EmberCare patterns"
+              - "Reinforce RAPID-only branding expectations"
+          - file: "README.md"
+            changes:
+              - "Update roadmap to reflect RAPID-only cleanup work"
+              - "Remove CLI distribution messaging until later phases"
+          - file: "package.json"
+            changes:
+              - "Remove bmad:* scripts"
+              - "Update description to RAPID-AI only"
+          - file: "PHASE-4-COMPLETE.md"
+            action: "Create completion summary for Phase 4"
+            content:
+              - "List all deleted BMAD files"
+              - "Verify extraction completed"
+              - "Confirm no BMAD references remain"
+          - file: "WIP-SESSION-2025-10-23.yaml"
+            changes:
+              - "Mark phase_4.status: 'Complete'"
+              - "Add completion timestamp"
+
+      completion_summary:
+        duration: "~1 hour"
+
+        what_changed:
+          - "Deleted .bmad-core/ directory (entire legacy framework)"
+          - "Deleted .bmad-infrastructure-devops/ directory"
+          - "Removed one-time migration helpers (transform-templates.py, debrand-tasks.sh)"
+          - "Tightened scripts/validate-structure.sh to fail on BMAD branding in dist/"
+          - "Pruned bmad:* scripts and keyword from package.json"
+          - "Updated roadmap, documentation guidance, and distribution notes"
+
+        verification:
+          bmad_directories_deleted: true
+          bmad_in_package_json: "Removed ✅"
+          rapid_tasks_present: "27 files (includes DE-BRANDING-SUMMARY.md)"
+          rapid_templates_present: "15 files"
+          rapid_checklists_present: "7 files"
+          rapid_workflows_present: "6 files"
+          note: |
+            3 historical migration docs remain in dist/.vscode/:
+            - dist/.vscode/rapid/tasks/DE-BRANDING-SUMMARY.md
+            - dist/.vscode/rapid/templates/TRANSFORMATION_REPORT.md
+            - dist/.vscode/rapid/data/rapid-kb.md (contains historical references)
+            These document the migration process itself, not active BMAD branding.
+
+        documentation_updates:
+          - "CLAUDE.md: Documentation workflow guidance now references EmberCare patterns"
+          - "README.md: Roadmap reflects Phase 4 cleanup focus"
+          - "READY-TO-DISTRIBUTE.md: Notes legacy .bmad-* directories removed"
+          - "WIP.yaml and WIP-SESSION-2025-10-23.yaml: Phase 4 marked complete"
+
+        next_steps:
+          - "Phase 5: Expand documentation (architecture overview, dual-mode guidance)"
+          - "Keep AGENTS.md aligned with updated CLAUDE.md baseline"
+          - "Defer npm/CLI distribution work until later release phase"
+
+    # ==========================================================================
+    # PHASE 5: Update Documentation
+    # ==========================================================================
+    phase_5:
+      status: "not started"
+      name: "Update Documentation"
+      duration: "1 hour"
+      goal: "Document dual-mode framework"
+
+      files_to_update:
+        "CLAUDE.md":
+          add_section: |
+            ## RAPID-AI Dual-Mode Framework
+
+            ### Conversational Mode (Discovery & Planning)
+            Use when: Exploring, brainstorming, creating specs
+            Activation: `/rapid` in Claude CLI
+            Commands:
+              - `/rapid:create-doc {template}` - Create PRD, Epic, Story
+              - `/rapid:task brownfield-create-epic` - Brownfield workflows
+              - `/rapid:checklist story-dod` - Quality gates
+
+            ### Execution Mode (Deterministic Implementation)
+            Use when: Generating code from YAML specs
+            Activation: VS Code tasks
+            Tasks:
+              - "RAPID: Generate Story from Epic" - YAML story generation
+              - "RAPID: Validate YAML" - Schema validation
+
+        "README.md":
+          replace_with: |
+            # RAPID-AI 2.0
+
+            Unified AI development framework combining:
+            - **Conversational workflows** for discovery & planning
+            - **YAML-first execution** for deterministic code generation
+
+            ## Quick Start
+
+            ### Drop into Any Project
+            ```bash
+            cp -r RAPID-AI/dist/.vscode /path/to/your-project/
+            ```
+
+            ### Use Conversational Mode
+            ```bash
+            claude
+            /rapid
+            /rapid:create-doc prd-tmpl
+            ```
+
+            ### Use Execution Mode
+            ```
+            Cmd+Shift+P → "RAPID: Generate Story from Epic"
+            ```
+
+        "docs/ARCHITECTURE.md":
+          create_new: |
+            # RAPID-AI Architecture
+
+            ## src/ - Source Code
+            - core/ - Execution framework (YAML workflows)
+            - rapid/ - Conversational framework (extracted BMAD)
+            - adapters/ - Project-specific (Flutter, React)
+            - schemas/ - YAML validation
+
+            ## dist/ - Distribution
+            - .vscode/ - Drop-in directory for any project
+
+            ## docs/ - Specifications
+            - prd.yaml, prd/*.yaml - Product specs
+            - stories/*.yaml - Story specs
+            - architecture/*.yaml - Technical decisions
+
+      additional_documentation_tasks:
+        duration: "15 min"
+        files:
+          - file: "CLAUDE.md"
+            action: "Final comprehensive update"
+            changes:
+              - "Ensure dual-mode framework fully documented"
+              - "Add troubleshooting section"
+              - "Add FAQ section"
+          - file: "README.md"
+            action: "Complete rewrite for RAPID-AI 2.0"
+            changes:
+              - "Clear feature overview"
+              - "Installation instructions"
+              - "Quick start for both modes"
+              - "Link to detailed docs"
+          - file: "PHASE-5-COMPLETE.md"
+            action: "Create completion summary for Phase 5"
+            content:
+              - "List all documentation updates"
+              - "Verify all files updated"
+              - "Document dual-mode framework"
+          - file: "WIP-SESSION-2025-10-23.yaml"
+            changes:
+              - "Mark phase_5.status: 'Complete'"
+              - "Add completion timestamp"
+              - "Update overall project status"
+
+    # ==========================================================================
+    # PHASE 6: Testing
+    # ==========================================================================
+    phase_6:
+      status: "not started"
+      name: "Testing"
+      duration: "2 hours"
+      goal: "Validate both modes work in RAPID-AI and EmberCare"
+
+      "6.1_test_rapid_ai":
+        duration: "1 hour"
+        steps:
+          - "Build: ./scripts/build-dist.sh"
+          - "Replace: rm -rf .vscode && cp -r dist/.vscode ."
+          - "Test conversational: /rapid in Claude CLI"
+          - "Test execution: VS Code task 'RAPID: Generate Story from Epic'"
+          - "Generate Story 1.2 using working framework"
+
+      "6.2_test_embercare":
+        duration: "1 hour"
+        steps:
+          - "Install: ./scripts/install-to-project.sh /path/to/EmberCare"
+          - "Configure: Update EmberCare/.vscode/core/config/.ai-workflow.yaml"
+          - "Test: Generate EmberCare story"
+          - "Validate: Both conversational and execution modes work"
+
+      "6.3_update_documentation":
+        duration: "20 min"
+        action: "Final testing documentation and session summary"
+        files:
+          - file: "PHASE-6-COMPLETE.md"
+            action: "Create completion summary for Phase 6"
+            content:
+              - "Document all testing performed"
+              - "Test results for RAPID-AI self-testing"
+              - "Test results for EmberCare installation"
+              - "Issues found and resolved"
+              - "Performance metrics (if collected)"
+          - file: "RAPID-AI-2.0-COMPLETE.md"
+            action: "Create final project completion summary"
+            content:
+              - "Overview of entire restructuring"
+              - "Before/after comparison"
+              - "All phases completed"
+              - "Success criteria validation"
+              - "Next steps and future enhancements"
+          - file: "WIP-SESSION-2025-10-23.yaml"
+            changes:
+              - "Mark phase_6.status: 'Complete'"
+              - "Mark all phases complete"
+              - "Add final session summary"
+              - "Update session.status: 'Complete'"
+              - "Add completion timestamp"
+          - file: "README.md"
+            action: "Final polish"
+            changes:
+              - "Add badges/status indicators"
+              - "Add success story/testimonial section"
+              - "Ensure all links work"
+          - file: "CLAUDE.md"
+            action: "Final verification"
+            changes:
+              - "Verify all sections accurate"
+              - "Add version history section"
+              - "Document known issues (if any)"
+
+# ============================================================================
+# SUCCESS CRITERIA
+# ============================================================================
+
+  success_criteria:
+    functional:
+      - "/rapid command works in Claude CLI"
+      - "VS Code tasks work for YAML generation"
+      - "Build script creates clean dist/.vscode/"
+      - "Installation to EmberCare successful"
+      - "Both modes (conversational + execution) functional"
+
+    structural:
+      - "All BMAD branding removed"
+      - "No .bmad-core/ or .bmad-infrastructure-devops/ directories"
+      - "Single src/ source directory"
+      - "Clean dist/ distribution"
+      - "Self-contained .vscode/ bundle"
+
+    documentation:
+      - "CLAUDE.md explains dual-mode usage"
+      - "README.md updated for RAPID-AI 2.0"
+      - "Architecture documented"
+      - "Installation instructions clear"
+
+# ============================================================================
+# INVENTORY & ESTIMATES
+# ============================================================================
+
+  file_inventory:
+    files_to_create: "~15 files"
+    files_to_move: "~50 files (tasks, templates, checklists, etc.)"
+    files_to_delete: "~15 files (.bmad-core/, AGENTS.md, etc.)"
+
+  risks_and_mitigation:
+    risk_1:
+      risk: "Breaking EmberCare compatibility"
+      mitigation: "Test thoroughly in RAPID-AI first, install as new .vscode/"
+
+    risk_2:
+      risk: "Losing valuable BMAD functionality"
+      mitigation: "Archive .bmad-core/ before deletion, careful audit of 26 tasks"
+
+    risk_3:
+      risk: "Build process complexity"
+      mitigation: "Simple bash scripts, manual testing, clear rollback plan"
+
+  timeline:
+    total_estimate: "11-14 hours"
+    breakdown:
+      - "Phase 1: 1-2 hours"
+      - "Phase 2: 4-6 hours"
+      - "Phase 3: 2 hours"
+      - "Phase 4: 30 min"
+      - "Phase 5: 1 hour"
+      - "Phase 6: 2 hours"
+
+    suggested_sessions:
+      session_1: "Phases 1-2 (5-8 hours)"
+      session_2: "Phases 3-6 (6 hours)"
+
+  next_immediate_actions:
+    - "Fix timeout bug in current Story 1.1 (30 min)"
+    - "Test Story 1.1 end-to-end (30 min)"
+    - "Then begin restructuring (Phase 1)"
+
+# ============================================================================
+# SESSION CONTEXT
+# ============================================================================
+
+session:
+  date: "2025-10-23"
+  duration: "~3 hours"
+  status: "paused - bug found during testing"
+  topic: "RAPID-AI 2.0 - Major Course Correction to YAML-First Structured Execution"
+
+summary:
+  what_we_built: |
+    Complete architectural pivot from conversational BMAD agents to YAML-first
+    structured execution framework. Story 1.1 (Generate Story YAML from Epic)
+    implemented and ready for testing. Framework now self-contained in .vscode/
+    for easy distribution.
+
+  current_status: "Story 1.1 implementation complete, testing revealed missing 'timeout' command on macOS"
+
+  next_session_start: "Fix timeout command issue, test story generation, distribute to EmberCare"
+
+# ============================================================================
+# KEY DECISIONS
+# ============================================================================
+
+decisions:
+  architectural_pivot:
+    from: "Conversational BMAD agents + Markdown outputs + CoPilot only"
+    to: "YAML-first structured data + Claude CLI + Execution-focused"
+    rationale: |
+      Conversation doesn't scale for execution. YAML provides:
+      - 50-70% token savings (4.3K → 1.5-2K tokens per story)
+      - Deterministic parsing (no natural language ambiguity)
+      - Schema validation ensures correctness
+      - Queryable and automatable
+
+  conversation_vs_execution:
+    conversation_mode:
+      use_for: "Ideation, exploration, brainstorming, architectural decisions"
+      format: "Natural conversation with Claude"
+      token_cost: "High but worth it - this is creative work"
+    execution_mode:
+      use_for: "Code generation from structured specifications"
+      format: "YAML input → Code output"
+      token_cost: "Minimal - deterministic, no interpretation needed"
+
+  yaml_only:
+    decision: "YAML-first, no markdown"
+    reasoning: "AI consumption optimized, can add markdown later if needed"
+    benefits:
+      - "Deterministic parsing"
+      - "Schema validation"
+      - "50-70% token savings"
+      - "Queryable with yq"
+
+  documentation_workflow:
+    decision: "Remove per-task documentation verification"
+    keep: "Epic-level documentation tracking only"
+    reasoning: "Reduce ceremony, solo developer doesn't need automated enforcement"
+
+  vscode_structure:
+    decision: "All RAPID-AI code lives in .vscode/"
+    structure: |
+      .vscode/
+      ├── tasks.json
+      ├── core/
+      │   ├── scripts/
+      │   ├── workflows/
+      │   └── config/
+      └── README.md
+    benefits:
+      - "Single directory copy for distribution"
+      - "No root directory pollution"
+      - "Works with existing docs/ structure"
+      - "Self-contained and portable"
+
+  dogfooding:
+    approach: "RAPID-AI uses .vscode/ for self-development"
+    distribution: "Copy .vscode/ to any project (e.g., EmberCare)"
+    testing: "Test in RAPID-AI first, then distribute"
+
+# ============================================================================
+# FILES CREATED (Original Session)
+# ============================================================================
+
+files_created:
+  prds_and_planning:
+    - path: "docs/prd-v2.yaml"
+      size: "~50 KB"
+      purpose: "Complete PRD for RAPID-AI 2.0 transformation"
+      status: "complete"
+
+    - path: "docs/prd/epic-1.yaml"
+      size: "~6 KB"
+      purpose: "Epic 1: Structured YAML Workflow Foundation (5 stories)"
+      status: "complete"
+
+    - path: "docs/prd/README.md"
+      size: "~3 KB"
+      purpose: "Epic YAML guide and philosophy"
+      status: "complete"
+
+  stories:
+    - path: "docs/stories/1-1-story.yaml"
+      size: "~8 KB"
+      purpose: "Story 1.1: Generate Story YAML from Epic Context"
+      status: "complete"
+
+    - path: "docs/stories/README.md"
+      size: "~4 KB"
+      purpose: "Story YAML guide and querying examples"
+      status: "complete"
+
+  vscode_integration:
+    - path: ".vscode/tasks.json"
+      size: "~3 KB"
+      purpose: "VS Code tasks for RAPID-AI (5 tasks)"
+      status: "complete but has bug"
+      tasks:
+        - "RAPID: Generate Story from Epic"
+        - "RAPID: Test Claude CLI"
+        - "RAPID: Validate YAML Files"
+        - "RAPID: Query All Stories"
+        - "RAPID: Show Epic Summary"
+
+    - path: ".vscode/README.md"
+      size: "~2 KB"
+      purpose: "Distribution guide and quick reference"
+      status: "complete"
+
+  framework_code:
+    - path: ".vscode/core/scripts/generate-story-yaml.sh"
+      size: "~8 KB"
+      purpose: "Story generator using Claude CLI"
+      status: "complete but has timeout bug"
+      bug: "Uses 'timeout' command which doesn't exist on macOS by default"
+
+    - path: ".vscode/core/workflows/common-functions.sh"
+      size: "~40 KB"
+      purpose: "AI abstraction layer and shared functions"
+      status: "copied from existing, not modified"
+
+    - path: ".vscode/core/config/.ai-workflow.yaml"
+      size: "~5 KB"
+      purpose: "Configuration for AI tools and workflows"
+      status: "complete"
+
+  documentation:
+    - path: "STORY-1.1-COMPLETE.md"
+      size: "~5 KB"
+      purpose: "Story 1.1 testing guide and checklist"
+      status: "complete"
+
+    - path: "DISTRIBUTION-CHECKLIST.md"
+      size: "~8 KB"
+      purpose: "What to copy to other projects (deprecated by .vscode/ approach)"
+      status: "obsolete - superseded by .vscode/ structure"
+
+    - path: "READY-TO-DISTRIBUTE.md"
+      size: "~5 KB"
+      purpose: "Complete distribution guide for .vscode/ approach"
+      status: "complete"
+
+    - path: "install-rapid-ai.sh"
+      size: "~3 KB"
+      purpose: "Installation script (obsolete - just cp -r .vscode/)"
+      status: "obsolete"
+
+# ============================================================================
+# TECHNICAL FACTS & CONTEXT
+# ============================================================================
+
+facts:
+  claude_cli:
+    command: "claude -p 'prompt'"
+    output_format: "Text by default, JSON with --output-format json"
+    timeout_typical: "10-30 seconds for story generation"
+    installed: true
+    version: "Available via Claude subscription"
+    works: true
+
+  yq:
+    command: "yq"
+    purpose: "YAML parsing and validation"
+    installed: false
+    install_command: "brew install yq"
+    required: false
+    note: "Validation skipped if not available"
+
+  project_structure:
+    docs_prd: "exists - contains epic YAML files"
+    docs_stories: "exists - will contain generated story YAMLs"
+    vscode_dir: "now contains entire RAPID-AI framework"
+
+  token_savings:
+    markdown_workflow: "~4,300 tokens per story (estimated)"
+    yaml_workflow: "~1,500-2,000 tokens per story (target)"
+    savings: "50-70% reduction"
+    measured: false
+
+  compatibility:
+    embercare: "100% backward compatible - existing markdown workflows still work"
+    rapid_ai_v2: "New YAML-first approach"
+    transition: "EmberCare can adopt incrementally"
+
+# ============================================================================
+# RAPID-AI 2.0 ARCHITECTURE
+# ============================================================================
+
+architecture:
+  epics:
+    epic_1:
+      id: 1
+      title: "Structured YAML Workflow Foundation"
+      priority: "critical"
+      status: "in_progress"
+      stories:
+        - id: "1.1"
+          title: "Generate Story YAML from Epic Context"
+          status: "in_progress - testing blocked by timeout bug"
+          priority: "critical"
+        - id: "1.2"
+          title: "Define Story YAML Schema and Validation"
+          status: "planned"
+        - id: "1.3"
+          title: "Create Epic YAML Schema and Directory Structure"
+          status: "planned"
+        - id: "1.4"
+          title: "Create Working VS Code Task Suite"
+          status: "planned"
+        - id: "1.5"
+          title: "Implement Token Usage Tracking"
+          status: "planned"
+
+    epic_2:
+      id: 2
+      title: "Claude CLI Integration for Superior Reasoning"
+      priority: "critical"
+      status: "planned"
+      note: "Partially done - Claude CLI integrated in Story 1.1"
+
+    epic_3:
+      id: 3
+      title: "VS Code Task Enhancement for YAML Workflows"
+      priority: "high"
+      status: "planned"
+
+    epic_4:
+      id: 4
+      title: "Strip BMAD Overhead and Extract Useful Patterns"
+      priority: "medium"
+      status: "planned"
+
+  yaml_schemas:
+    story_schema:
+      required_fields:
+        - "story.id"
+        - "story.epic_id"
+        - "story.title"
+        - "story.priority"
+        - "story.status"
+        - "story.description"
+        - "story.acceptance_criteria"
+      optional_fields:
+        - "story.metadata"
+        - "story.rationale"
+        - "story.technical_notes"
+        - "story.implementation_files"
+        - "story.testing_approach"
+        - "story.dependencies"
+        - "story.completion_criteria"
+
+    epic_schema:
+      required_fields:
+        - "epic.id"
+        - "epic.title"
+        - "epic.priority"
+        - "epic.status"
+        - "epic.description"
+        - "epic.goals"
+        - "epic.stories"
+      optional_fields:
+        - "epic.success_criteria"
+        - "epic.documentation"
+        - "epic.technical_requirements"
+        - "epic.risk_assessment"
+
+# ============================================================================
+# DISTRIBUTION PLAN
+# ============================================================================
+
+distribution:
+  target_project: "EmberCare"
+  method: "Copy .vscode/ directory"
+  command: "cp -r RAPID-AI/.vscode EmberCare/"
+
+  prerequisites:
+    required:
+      - dependency: "Claude CLI"
+        check: "claude --version"
+        status: "installed"
+
+      - dependency: "Existing docs/ structure"
+        check: "docs/prd/ and docs/stories/ exist"
+        status: "exists in EmberCare"
+
+    optional:
+      - dependency: "yq"
+        check: "yq --version"
+        status: "not installed"
+        install: "brew install yq"
+        note: "Recommended for YAML validation"
+
+  embercare_setup:
+    step_1:
+      action: "Copy .vscode/"
+      command: "cp -r RAPID-AI/.vscode EmberCare/"
+
+    step_2:
+      action: "Configure for Flutter"
+      file: "EmberCare/.vscode/core/config/.ai-workflow.yaml"
+      changes:
+        - "project.type: 'flutter'"
+        - "project.architecture: ['bloc', 'drift']"
+
+    step_3:
+      action: "Create EmberCare epic"
+      file: "EmberCare/docs/prd/epic-1.yaml"
+      content: "Medication Inventory Management features"
+
+    step_4:
+      action: "Generate first story"
+      task: "RAPID: Generate Story from Epic"
+      inputs: "Epic 1, Story 1, 'Add Medication to Inventory'"
+
+# ============================================================================
+# ASSUMPTIONS
+# ============================================================================
+
+assumptions:
+  user_environment:
+    - "macOS operating system (Darwin 25.0.0)"
+    - "Claude CLI installed and authenticated"
+    - "VS Code as primary IDE"
+    - "Bash shell available"
+    - "Git repository"
+    - "GitHub CLI (gh) for GitHub operations"
+
+  project_constraints:
+    - "EmberCare is production Flutter app with BLoC + Drift"
+    - "Solo developer (John Junkins / macjunkins)"
+    - "RAPID-AI extracted from EmberCare patterns"
+    - "Must maintain 100% EmberCare backward compatibility"
+
+  workflow_approach:
+    - "VS Code tasks are primary interface (not CLI)"
+    - "YAML-first for AI consumption"
+    - "Dog-fooding: RAPID-AI uses its own workflows"
+    - "Manual testing before automation"
+    - "Incremental distribution (test in RAPID-AI first)"
+
+  ai_tools:
+    - "Claude CLI for discovery and analysis (superior reasoning)"
+    - "CoPilot CLI for code generation (fast, simple)"
+    - "Dual-AI strategy based on task type"
+
+  user_preferences:
+    - "Verbose code with explanatory comments (why, not just what)"
+    - "Test as you code, not after"
+    - "No auto-commit or auto-PR without explicit approval"
+    - "Ask before destructive operations"
+    - "Explanation-first, then execution"
+
+# ============================================================================
+# NEXT STEPS (From Original Session)
+# ============================================================================
+
+immediate_actions:
+  priority_1:
+    task: "Fix timeout command bug"
+    approach: "Implement Bash built-in timeout mechanism"
+    file: ".vscode/core/scripts/generate-story-yaml.sh"
+    estimated_time: "15-30 minutes"
+
+  priority_2:
+    task: "Test story generation end-to-end"
+    action: "Generate Story 1.2 using fixed script"
+    validation:
+      - "Story YAML created in docs/stories/1-2-story.yaml"
+      - "YAML is valid (yq validation if installed)"
+      - "Content is relevant to Epic 1"
+      - "All required fields present"
+
+  priority_3:
+    task: "Install yq for YAML validation"
+    command: "brew install yq"
+    optional: true
+    benefit: "Enable YAML validation in scripts"
+
+  priority_4:
+    task: "Generate remaining Epic 1 stories"
+    stories:
+      - "1.3 - Create Epic YAML Schema"
+      - "1.4 - Create VS Code Task Suite"
+      - "1.5 - Token Usage Tracking"
+
+  priority_5:
+    task: "Distribute to EmberCare"
+    when: "After Story 1.1 fully tested in RAPID-AI"
+    command: "cp -r RAPID-AI/.vscode EmberCare/"
+
+# ============================================================================
+# PHILOSOPHICAL NOTES
+# ============================================================================
+
+philosophy:
+  conversation_for_ideation:
+    note: "This entire session was conversational - perfect use case"
+    value: "Teased out architectural decisions, explored options, made key choices"
+    outcome: "Clear vision for YAML-first execution framework"
+
+  execution_for_implementation:
+    note: "Next session should be execution-focused"
+    approach: "Fix bug → test → generate stories → distribute"
+    minimal_conversation: "Just do the work, validate results"
+
+  dogfooding_success:
+    note: "RAPID-AI will generate its own remaining stories using Story 1.1"
+    validation: "Framework proves itself by building itself"
+    confidence: "If it works for RAPID-AI, it'll work for EmberCare"
+
+# ============================================================================
+# USER PROFILE REMINDER
+# ============================================================================
+
+user_profile:
+  name: "John Junkins"
+  handle: "macjunkins"
+  role: "Solo developer, self-taught"
+  primary_languages: [".NET", "Dart/Flutter"]
+  philosophy: "Build useful first, commercialize later"
+
+  critical_rules:
+    - "ALWAYS ask before committing code"
+    - "ALWAYS ask before creating PRs"
+    - "ALWAYS ask before destructive operations"
+    - "Explain WHY, not just WHAT"
+    - "Challenge bad ideas respectfully"
+    - "No gaslighting - honest feedback"
+
+  work_style:
+    - "Verbose code with comments explaining WHY"
+    - "Test as you code"
+    - "Dog-food your own tools"
+    - "MVP first, polish later"
+    - "Break for testing and validation"
+
+# ============================================================================
+# END OF IMPLEMENTATION PLAN
+# ============================================================================

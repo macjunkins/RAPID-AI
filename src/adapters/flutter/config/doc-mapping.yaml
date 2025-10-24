@@ -1,0 +1,227 @@
+# Flutter Adapter Documentation Mapping
+#
+# This file defines how Flutter file changes map to documentation requirements
+# Adapted from EmberCare proven patterns for BLoC + Drift architecture
+#
+# Pattern: file_pattern → [list of documentation files that may need updates]
+
+# Core Flutter architecture files
+pubspec.yaml:
+  - README.md
+  - docs/architecture/tech-stack.md
+  - examples/flutter-project/README.md
+
+# BLoC files (state management)
+lib/blocs/**/*.dart:
+  - README.md
+  - docs/architecture/state-management.md
+  - docs/guides/bloc-patterns.md
+
+lib/*/blocs/*.dart:
+  - README.md
+  - docs/architecture/state-management.md
+
+# Drift database files
+lib/database/**/*.dart:
+  - README.md
+  - docs/architecture/data-persistence.md
+  - docs/guides/database-schema.md
+
+lib/*/database/*.dart:
+  - README.md
+  - docs/architecture/data-persistence.md
+
+# UI/Widget files
+lib/screens/**/*.dart:
+  - README.md
+  - docs/guides/user-interface.md
+  - docs/guides/screens-navigation.md
+
+lib/widgets/**/*.dart:
+  - README.md
+  - docs/guides/user-interface.md
+  - docs/guides/component-library.md
+
+lib/pages/**/*.dart:
+  - README.md
+  - docs/guides/user-interface.md
+  - docs/guides/screens-navigation.md
+
+# Repository pattern files
+lib/repositories/**/*.dart:
+  - README.md
+  - docs/architecture/data-access.md
+  - docs/guides/repository-pattern.md
+
+lib/*/repositories/*.dart:
+  - README.md
+  - docs/architecture/data-access.md
+
+# Dependency injection
+lib/di/**/*.dart:
+  - README.md
+  - docs/architecture/dependency-injection.md
+  - docs/guides/service-locator.md
+
+lib/main.dart:
+  - README.md
+  - docs/guides/getting-started.md
+  - docs/architecture/application-bootstrap.md
+
+# Configuration files
+lib/config/**/*.dart:
+  - README.md
+  - docs/guides/configuration.md
+  - docs/architecture/app-configuration.md
+
+# Models and data structures
+lib/models/**/*.dart:
+  - README.md
+  - docs/architecture/data-models.md
+  - docs/api/data-structures.md
+
+lib/*/models/*.dart:
+  - README.md
+  - docs/architecture/data-models.md
+
+# Services
+lib/services/**/*.dart:
+  - README.md
+  - docs/architecture/services.md
+  - docs/guides/background-services.md
+
+# Utilities and helpers
+lib/utils/**/*.dart:
+  - README.md
+  - docs/guides/utilities.md
+
+lib/helpers/**/*.dart:
+  - README.md
+  - docs/guides/utilities.md
+
+# Testing files
+test/**/*_test.dart:
+  - README.md
+  - docs/guides/testing.md
+  - docs/guides/testing-strategies.md
+
+test/blocs/**/*_test.dart:
+  - docs/guides/testing.md
+  - docs/guides/bloc-testing.md
+
+test/widgets/**/*_test.dart:
+  - docs/guides/testing.md
+  - docs/guides/widget-testing.md
+
+integration_test/**/*_test.dart:
+  - docs/guides/testing.md
+  - docs/guides/integration-testing.md
+
+# Documentation files (self-referential)
+docs/architecture/**/*.md:
+  - docs/architecture/index.md
+  - README.md
+
+docs/guides/**/*.md:
+  - docs/guides/index.md
+  - README.md
+
+docs/api/**/*.md:
+  - docs/api/index.md
+  - README.md
+
+# Flutter-specific severity mapping
+# Defines which types of changes are critical, major, or minor for documentation
+
+severity_mapping:
+  critical:
+    # Changes that MUST be documented before release
+    - pattern: "pubspec.yaml"
+      reason: "Dependency changes affect installation and setup"
+    - pattern: "lib/main.dart"
+      reason: "Application bootstrap changes affect getting started"
+    - pattern: "lib/*/blocs/*_bloc.dart"
+      reason: "BLoC changes affect state management patterns (new in BLoC)"
+    - pattern: "lib/database/**/*.dart"
+      reason: "Database schema changes affect data migration"
+    - pattern: "lib/config/**/*.dart"
+      reason: "Configuration changes affect setup and deployment"
+
+  major:
+    # Changes that SHOULD be documented soon
+    - pattern: "lib/screens/**/*.dart"
+      reason: "New screens affect user workflows"
+    - pattern: "lib/repositories/**/*.dart"
+      reason: "Repository changes affect data access patterns"
+    - pattern: "lib/services/**/*.dart"
+      reason: "Service changes affect background functionality"
+    - pattern: "lib/models/**/*.dart"
+      reason: "Model changes affect API contracts"
+
+  minor:
+    # Changes that CAN be documented later
+    - pattern: "lib/widgets/**/*.dart"
+      reason: "Widget changes are typically internal UI improvements"
+    - pattern: "lib/utils/**/*.dart"
+      reason: "Utility changes are typically internal helpers"
+    - pattern: "test/**/*_test.dart"
+      reason: "Test changes don't affect user-facing documentation"
+
+# EmberCare-specific patterns (for backward compatibility)
+# These patterns are based on actual EmberCare project structure
+
+embercare_patterns:
+  medication_feature:
+    - "lib/features/medication/**/*.dart"
+    - "lib/features/medication/blocs/*.dart"
+    - "lib/features/medication/screens/*.dart"
+
+  caregiver_feature:
+    - "lib/features/caregiver/**/*.dart"
+    - "lib/features/caregiver/blocs/*.dart"
+    - "lib/features/caregiver/screens/*.dart"
+
+  inventory_feature:
+    - "lib/features/inventory/**/*.dart"
+    - "lib/features/inventory/blocs/*.dart"
+    - "lib/features/inventory/screens/*.dart"
+
+# Documentation generation prompts for Flutter
+# These prompts guide AI in generating Flutter-specific documentation
+
+ai_prompts:
+  bloc_documentation:
+    prompt: |
+      Analyze the BLoC file changes and generate documentation that includes:
+      1. BLoC events and their purpose
+      2. BLoC states and UI representation
+      3. State transition logic
+      4. Integration with UI components
+      5. Testing approach for BLoC logic
+
+  drift_documentation:
+    prompt: |
+      Analyze the Drift database changes and generate documentation that includes:
+      1. Table schema definitions
+      2. Relationships and foreign keys
+      3. Migration strategy
+      4. Query patterns and usage examples
+      5. Testing approach for database operations
+
+  screen_documentation:
+    prompt: |
+      Analyze the screen/UI changes and generate documentation that includes:
+      1. User workflow and navigation
+      2. Widget hierarchy and components
+      3. BLoC integration for state management
+      4. User interaction patterns
+      5. Accessibility considerations
+
+  repository_documentation:
+    prompt: |
+      Analyze the repository changes and generate documentation that includes:
+      1. Data access patterns
+      2. Integration with Drift database
+      3. Caching strategy (if applicable)
+      4. Error handling approach
+      5. Testing strategy for repositories

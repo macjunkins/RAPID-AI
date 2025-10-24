@@ -2,10 +2,82 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "RAPID: Generate Story from Epic",
-            "detail": "Generate story YAML from epic context using Claude CLI - IMMEDIATE VALUE",
+            "label": "RAPID: Conversational Mode - Instructions",
+            "detail": "Launch RAPID agent in Claude CLI and explore conversational workflows",
             "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/generate-story-yaml.sh",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "cat <<EOT\n🚀 RAPID Conversational Mode\n\n1. Run: claude\n2. Inside Claude CLI, enter: /rapid\n3. Then run commands such as:\n   • /rapid:create-doc prd-tmpl\n   • *task brownfield-create-epic\n   • *execute-checklist story-dod\n\nReference files:\n- src/rapid/rapid-config.yaml\n- src/rapid/tasks/\n- src/rapid/templates/\n\nTip: Use VS Code inputs below to generate specific commands.\nEOT"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new",
+                "focus": false,
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "RAPID: Create Document",
+            "detail": "Generate a conversational command for creating a document from template",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "TEMPLATE='${input:rapidTemplate}'; cat <<EOT\n🧾 Create RAPID document\n\n1. claude\n2. /rapid\n3. /rapid:create-doc $TEMPLATE\n\nTemplates live in src/rapid/templates/\nEOT"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new",
+                "focus": false,
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "RAPID: Execute Task",
+            "detail": "Generate a conversational command for executing a RAPID workflow task",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "TASK='${input:rapidTask}'; cat <<EOT\n🛠️ Execute RAPID task\n\n1. claude\n2. /rapid\n3. *task $TASK\n\nTasks live in src/rapid/tasks/\nEOT"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new",
+                "focus": false,
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "RAPID: Run Checklist",
+            "detail": "Generate a conversational command for running a quality checklist",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "CHECKLIST='${input:rapidChecklist}'; cat <<EOT\n✅ Run RAPID checklist\n\n1. claude\n2. /rapid\n3. *execute-checklist $CHECKLIST\n\nChecklists live in src/rapid/checklists/\nEOT"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new",
+                "focus": false,
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "RAPID: Generate Story from Epic",
+            "detail": "Generate story YAML from epic context using Claude CLI",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/core/scripts/generate-story-yaml.sh",
             "args": [
                 "${input:epic}",
                 "${input:story}",
@@ -20,578 +92,66 @@
                 "showReuseMessage": false,
                 "clear": true
             },
-            "problemMatcher": {
-                "owner": "rapid-ai",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    },
-                    {
-                        "regexp": "^⚠️\\s+(.+)$",
-                        "message": 1,
-                        "severity": 2
-                    }
-                ]
-            }
+            "problemMatcher": []
         },
         {
-            "label": "AI Workflow: Analyze Story",
+            "label": "RAPID: Test Claude CLI",
+            "detail": "Verify Claude CLI is installed and working",
             "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/ai-discovery.sh",
+            "command": "claude",
             "args": [
-                "${input:epic}",
-                "${input:story}",
-                "${input:title}",
-                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md"
+                "--version"
             ],
-            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            },
-            "problemMatcher": {
-                "owner": "ai-workflow",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    },
-                    {
-                        "regexp": "^⚠️\\s+(.+)$",
-                        "message": 1,
-                        "severity": 2
-                    }
-                ]
+                "panel": "new"
             }
         },
         {
-            "label": "AI Workflow: Generate Implementation Plan",
+            "label": "RAPID: Validate YAML Files",
+            "detail": "Validate all YAML files in docs/ directory",
             "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/ai-implementation-plan.sh",
+            "command": "bash",
             "args": [
-                "${input:epic}",
-                "${input:story}",
-                "${input:title}",
-                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md",
-                "${workspaceFolder}/docs/plans/story-${input:epic}-${input:story}-plan.md"
+                "-lc",
+                "for file in docs/**/*.yaml; do echo \"Validating $file...\"; yq eval . \"$file\" > /dev/null && echo \"✅ $file valid\" || echo \"❌ $file invalid\"; done"
             ],
-            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
-                "focus": false,
-                "panel": "shared"
+                "panel": "new"
             }
         },
         {
-            "label": "AI Workflow: Flutter Analysis",
+            "label": "RAPID: Query All Stories",
+            "detail": "List all stories with status using yq",
             "type": "shell",
-            "command": "${workspaceFolder}/adapters/flutter/scripts/flutter-discovery.sh",
+            "command": "bash",
             "args": [
-                "${input:epic}",
-                "${input:story}",
-                "${input:title}",
-                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md"
+                "-lc",
+                "for file in docs/stories/*.yaml; do echo \"Story: $(yq eval '.story.id' \"$file\") - $(yq eval '.story.title' \"$file\") [$(yq eval '.story.status' \"$file\")]\"; done"
             ],
-            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
-                "focus": false,
-                "panel": "shared"
+                "panel": "new"
             }
         },
         {
-            "label": "AI Workflow: Complete Story Setup",
+            "label": "RAPID: Show Epic Summary",
+            "detail": "Display epic summary with story count",
             "type": "shell",
-            "command": "echo",
-            "args": ["Complete workflow: Analysis → Plan → Documentation"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "dependsOrder": "sequence",
-            "dependsOn": [
-                "AI Workflow: Analyze Story",
-                "AI Workflow: Generate Implementation Plan"
-            ]
-        },
-        {
-            "label": "Systematic: Project Analysis",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/workflows/systematic/project-analysis.sh",
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "systematic-workflow",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Systematic: Quality Checklist",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/workflows/systematic/quality-checklist.sh",
-            "args": ["interactive"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Systematic: Generate Document",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/workflows/systematic/document-generator.sh",
-            "args": ["interactive"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Systematic: Generate Story Document",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/workflows/systematic/document-generator.sh",
+            "command": "bash",
             "args": [
-                "batch",
-                "story-template",
-                "story-${input:epic}-${input:story}",
-                "STORY_NUMBER=${input:epic}.${input:story},STORY_TITLE=${input:title},USER_ROLE=${input:userRole},STATUS=Draft"
+                "-lc",
+                "yq eval '.epic | \"Epic \" + (.id | tostring) + \": \" + .title + \" (\" + .status + \")\\nStories: \" + (.stories | length | tostring)' docs/prd/epic-${input:epic}.yaml"
             ],
-            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
-                "focus": false,
-                "panel": "shared"
+                "panel": "new"
             }
-        },
-        {
-            "label": "Documentation: Analyze Story with Documentation",
-            "detail": "Analyze story requirements and identify documentation that needs updating",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
-            "args": [
-                "analyze",
-                "${input:epic}",
-                "${input:story}",
-                "${input:title}",
-                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            },
-            "problemMatcher": {
-                "owner": "documentation-workflow",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    },
-                    {
-                        "regexp": "^📝\\s+(.+)$",
-                        "message": 1,
-                        "severity": 2
-                    },
-                    {
-                        "regexp": "^📋\\s+Documentation\\srequired:\\s(.+)$",
-                        "message": "Documentation required: $1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Documentation: Generate Implementation Plan with Documentation",
-            "detail": "Generate implementation plan with integrated documentation requirements",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
-            "args": [
-                "plan",
-                "${input:epic}",
-                "${input:story}",
-                "${input:title}",
-                "${workspaceFolder}/docs/discovery/story-${input:epic}-${input:story}-discovery.md",
-                "${workspaceFolder}/docs/plans/story-${input:epic}-${input:story}-plan.md"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "documentation-workflow",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    },
-                    {
-                        "regexp": "^📋\\s+Documentation\\splan:\\s(.+)$",
-                        "message": "Documentation plan: $1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Documentation: Verify Task Completion",
-            "detail": "Verify task completion including documentation requirements",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/task-completion-verification.sh",
-            "args": [
-                "${input:taskId}",
-                "${workspaceFolder}/docs/stories/${input:epic}.${input:story}.${input:storySlug}.md"
-            ],
-            "group": "test",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "task-completion",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^🚫\\s+TASK COMPLETION BLOCKED$",
-                        "message": "Task completion blocked - see output for details"
-                    },
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    },
-                    {
-                        "regexp": "^📝\\s+Documentation\\sissue:\\s(.+)$",
-                        "message": "Documentation issue: $1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Documentation: Complete Task with Documentation Verification",
-            "detail": "Complete task with mandatory documentation verification step",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
-            "args": [
-                "complete",
-                "${input:taskId}",
-                "${workspaceFolder}/docs/stories/${input:epic}.${input:story}.${input:storySlug}.md",
-                "${input:changedFiles}"
-            ],
-            "group": "test",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "documentation-workflow",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": 1
-                    },
-                    {
-                        "regexp": "^🚫\\s+Documentation\\snot\\scurrent$",
-                        "message": "Documentation verification failed - documentation is not current",
-                        "severity": 1
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Documentation: Check Documentation Requirements",
-            "detail": "Check what documentation needs updating based on recent changes",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
-            "args": ["git-diff"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "documentation-detection",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^📋\\s+Documentation\\srequired\\sfor:\\s(.+)$",
-                        "message": "Documentation required for: $1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Documentation: Complete Story Setup with Documentation",
-            "detail": "Complete workflow with documentation: Analysis → Plan → Documentation Verification",
-            "type": "shell",
-            "command": "echo",
-            "args": ["Complete workflow with documentation: Analysis → Plan → Documentation Verification"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "dependsOrder": "sequence",
-            "dependsOn": [
-                "Documentation: Analyze Story with Documentation",
-                "Documentation: Generate Implementation Plan with Documentation"
-            ]
-        },
-        {
-            "label": "Documentation: Quick Documentation Status Check",
-            "detail": "Quick check of current documentation status for active story",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
-            "args": [
-                "files",
-                "docs/stories/${input:epic}.${input:story}.${input:storySlug}.md",
-                "templates/vscode/tasks.json",
-                "core/scripts/",
-                "adapters/"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "documentation-status",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^📋\\s+(.+)\\sneeds\\sdocumentation\\supdate$",
-                        "message": "$1 needs documentation update",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "Documentation: Show Documentation Guidelines",
-            "detail": "Display documentation guidelines and best practices",
-            "type": "shell",
-            "command": "echo",
-            "args": [
-                "📚 DOCUMENTATION GUIDELINES:\n\n1. User-facing changes require README updates\n2. API changes need documentation in docs/\n3. Configuration changes require example updates\n4. New features need usage examples\n5. Breaking changes must be highlighted\n\n📋 Use 'Documentation: Check Documentation Requirements' to see what needs updating"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Documentation: Interactive Documentation Update Helper",
-            "detail": "Interactive helper to guide through documentation updates",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/workflow-integration.sh",
-            "args": [
-                "help",
-                "${input:epic}",
-                "${input:story}",
-                "${input:title}"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared"
-            },
-            "problemMatcher": {
-                "owner": "documentation-helper",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^📝\\s+Action\\srequired:\\s(.+)$",
-                        "message": "Action required: $1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "AI Documentation: Get AI Suggestions for Files",
-            "detail": "Use AI to analyze specific files and suggest documentation updates",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
-            "args": [
-                "--suggest",
-                "--files",
-                "${input:aiAnalysisFiles}"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            },
-            "options": {
-                "env": {
-                    "ENABLE_AI_ANALYSIS": "true"
-                }
-            },
-            "problemMatcher": {
-                "owner": "ai-documentation",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^📋\\s+Documentation\\srequired\\sfor:\\s(.+)$",
-                        "message": "AI suggests documentation update for: $1",
-                        "severity": 2
-                    },
-                    {
-                        "regexp": "^⚠️\\s+(.+)$",
-                        "message": "$1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "AI Documentation: Comprehensive Analysis",
-            "detail": "Run comprehensive AI-powered documentation analysis on the project",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
-            "args": ["--analyze-ai"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            },
-            "options": {
-                "env": {
-                    "ENABLE_AI_ANALYSIS": "true"
-                }
-            },
-            "problemMatcher": {
-                "owner": "ai-documentation-analysis",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^❌\\s+(.+)$",
-                        "message": "AI analysis error: $1"
-                    },
-                    {
-                        "regexp": "^⚠️\\s+(.+)$",
-                        "message": "AI analysis warning: $1",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "AI Documentation: Verify Documentation Currency",
-            "detail": "Use AI to verify that documentation is current with recent changes",
-            "type": "shell",
-            "command": "${workspaceFolder}/core/scripts/doc-detection.sh",
-            "args": ["--verify"],
-            "group": "test",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared"
-            },
-            "options": {
-                "env": {
-                    "ENABLE_AI_ANALYSIS": "true"
-                }
-            },
-            "problemMatcher": {
-                "owner": "ai-documentation-verification",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": [
-                    {
-                        "regexp": "^⚠️\\s+Documentation\\sverification\\sidentified\\spotential\\sissues$",
-                        "message": "Documentation verification identified potential issues",
-                        "severity": 2
-                    },
-                    {
-                        "regexp": "^(.+)\\s→\\smay\\srequire\\sdocumentation\\supdates$",
-                        "message": "$1 may require documentation updates",
-                        "severity": 2
-                    }
-                ]
-            }
-        },
-        {
-            "label": "AI Documentation: Complete Story with AI Documentation Check",
-            "detail": "Complete story workflow with AI-powered documentation verification",
-            "type": "shell",
-            "command": "echo",
-            "args": ["🤖 AI-Enhanced Documentation Workflow: Analysis → Plan → AI Verification"],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "dependsOrder": "sequence",
-            "dependsOn": [
-                "Documentation: Analyze Story with Documentation",
-                "Documentation: Generate Implementation Plan with Documentation",
-                "AI Documentation: Verify Documentation Currency"
-            ]
         }
     ],
     "inputs": [
@@ -610,37 +170,25 @@
         {
             "id": "title",
             "description": "Story title",
-            "default": "New Feature",
+            "default": "New Story",
             "type": "promptString"
         },
         {
-            "id": "userRole",
-            "description": "User role (e.g., developer, user, admin)",
-            "default": "developer",
+            "id": "rapidTemplate",
+            "description": "Template id from src/rapid/templates (e.g., prd-tmpl)",
+            "default": "prd-tmpl",
             "type": "promptString"
         },
         {
-            "id": "taskId",
-            "description": "Task ID (e.g., 3.1 for Task 3, subtask 1)",
-            "default": "1",
+            "id": "rapidTask",
+            "description": "RAPID task id from src/rapid/tasks (e.g., brownfield-create-epic)",
+            "default": "brownfield-create-epic",
             "type": "promptString"
         },
         {
-            "id": "storySlug",
-            "description": "Story slug (lowercase, hyphenated version of title)",
-            "default": "new-feature",
-            "type": "promptString"
-        },
-        {
-            "id": "changedFiles",
-            "description": "Comma-separated list of changed files (optional)",
-            "default": "",
-            "type": "promptString"
-        },
-        {
-            "id": "aiAnalysisFiles",
-            "description": "Comma-separated list of files to analyze with AI",
-            "default": "core/scripts/,src/cli.js,templates/vscode/tasks.json",
+            "id": "rapidChecklist",
+            "description": "Checklist id from src/rapid/checklists (e.g., story-dod-checklist)",
+            "default": "story-dod-checklist",
             "type": "promptString"
         }
     ]
