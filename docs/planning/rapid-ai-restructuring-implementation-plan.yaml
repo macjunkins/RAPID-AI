@@ -23,9 +23,10 @@ metadata:
   owner: "John Junkins"
   created: "2025-10-23"
   last_updated: "2025-10-24"
-  total_estimate: "11-14 hours across 2 sessions"
+  total_estimate: "13-16 hours across 2-3 sessions"
   status: "In Progress - Phase 4 Complete, Phases 5-6 Remaining"
-  progress: "4 of 6 phases complete (67%)"
+  progress: "4 of 7 phases complete (57%)"
+  note: "Phase 5.5 added after deep documentation analysis revealed critical alignment issues"
 
   consolidation_notes: |
     This file consolidates all tracking documentation into a single source of truth.
@@ -82,6 +83,19 @@ change_log:
       - "Removed bmad:* scripts from package.json"
       - "Tightened validate-structure.sh"
     note: "3 historical migration docs remain (DE-BRANDING-SUMMARY.md, TRANSFORMATION_REPORT.md, rapid-kb.md historical refs)"
+
+  - date: "2025-10-24"
+    phase: "Phase 5.5 (Added)"
+    summary: "Deep documentation analysis revealed critical alignment issues"
+    duration: "Planned: ~2 hours"
+    findings:
+      - "README.md completely out of sync with Phase 1-4 reality"
+      - "CLAUDE.md mixes implemented vs planned features"
+      - "package.json describes non-existent files"
+      - "Roadmap status inconsistent across files"
+      - "5 obsolete root markdown files need archiving"
+    impact: "High - new users/contributors would be confused about project status"
+    tasks_added: "5 subtasks covering critical fixes, cleanup, verification, architecture doc, AGENTS.md update"
 
 # ============================================================================
 # IMPLEMENTATION PLAN
@@ -763,6 +777,221 @@ implementation_plan:
               - "Update overall project status"
 
     # ==========================================================================
+    # PHASE 5.5: Documentation Alignment & Cleanup (Deep Analysis)
+    # ==========================================================================
+    phase_5_5:
+      status: "not started"
+      name: "Documentation Alignment & Cleanup"
+      duration: "2 hours"
+      goal: "Synchronize all documentation with Phase 1-4 reality and remove obsolete files"
+      created: "2025-10-24"
+
+      context: |
+        Deep analysis revealed that while Phases 1-4 were executed successfully,
+        outward-facing documentation (README.md, CLAUDE.md) still describes old
+        structure and aspirational features without clearly marking what's implemented
+        vs planned. This phase brings documentation into full alignment with current
+        reality.
+
+      critical_findings:
+        misalignment_severity: "High"
+        impact: "New users/contributors would be confused about project status"
+        root_cause: "High-velocity execution (Phases 1-4 in ~5 hours) outpaced documentation updates"
+
+        critical_issues:
+          - issue: "README.md completely out of sync"
+            problems:
+              - "Says 'Pre-Alpha' with no roadmap"
+              - "Shows CLI installation (npm install -g rapid-ai) - doesn't exist yet"
+              - "References wrong package name (ai-dev-workflow vs rapid-ai)"
+              - "Old directory structure (core/ at root vs src/core/)"
+              - "Shows Phase 4 as '🚧 In Progress' when Complete"
+              - "Says BMAD assets will be removed (already done!)"
+              - "References deprecated install-rapid-ai.sh script"
+
+          - issue: "CLAUDE.md mostly correct but mixes implemented vs planned"
+            problems:
+              - "Correctly documents src/dist separation ✅"
+              - "Documents RAPID conversational framework ✅"
+              - "BUT: Mixes Phase 1-4 completed work with Phase 5-6 aspirational features"
+              - "Documentation workflow features not clearly marked as planned vs implemented"
+
+          - issue: "package.json describes non-existent files"
+            problems:
+              - "files: ['dist/', 'core/', 'adapters/'] - root core/ doesn't exist (in src/)"
+              - "main: 'dist/index.js' - doesn't exist (CLI deferred)"
+              - "bin: 'dist/cli.js' - doesn't exist yet"
+              - "Scripts say 'deferred' but package.json structure assumes CLI ready"
+
+          - issue: "Roadmap status confusion across files"
+            problems:
+              - "Implementation plan: Phases 1-4 ✅ Complete"
+              - "README.md: Shows Phases 2-4 as 🚧 In Progress"
+              - "CHANGELOG.md: Correctly shows Phases 1-4 Complete ✅"
+
+          - issue: "READY-TO-DISTRIBUTE.md obsolete"
+            problems:
+              - "Written for old structure where .vscode/ was only location"
+              - "Doesn't reflect src/dist separation"
+              - "References 'old location' of core/ at root"
+
+      tasks:
+        "5.5.1_critical_fixes":
+          duration: "45 min"
+          priority: "P0 - Blocking"
+
+          task_1:
+            file: "README.md"
+            action: "Complete rewrite to reflect Phase 1-4 completion"
+            changes:
+              - "Update status: 'Phases 1-4 Complete (67%), Phases 5-6 Remaining (33%)'"
+              - "Remove or qualify 'Pre-Alpha' warning"
+              - "Replace directory structure with accurate src/dist layout"
+              - "Remove CLI installation instructions (add note: 'CLI planned for future release')"
+              - "Update Quick Start to reflect actual current capabilities"
+              - "Fix package name references (rapid-ai not ai-dev-workflow)"
+              - "Update roadmap: Phases 1-4 ✅ Complete, 5-6 ⏳ Planned"
+              - "Remove references to non-existent install-rapid-ai.sh"
+              - "Add accurate 'Current Status' section at top"
+            estimate: "30 min"
+
+          task_2:
+            file: "CLAUDE.md"
+            action: "Separate implemented vs planned features"
+            changes:
+              - "Add Phase 1-4 completion callout at top"
+              - "Mark documentation workflow features as 'Phase 5 Planned' if not yet built"
+              - "Verify all code examples reference correct paths (src/, dist/)"
+              - "Update Development Commands section to reflect actual working commands"
+              - "Clarify which features are live vs aspirational"
+            estimate: "20 min"
+
+          task_3:
+            file: "package.json"
+            action: "Fix files array and metadata"
+            changes:
+              - "Update files: Remove 'core/', 'adapters/' (in src/ now) OR list correct src/ structure"
+              - "Remove or comment out 'main' and 'bin' until CLI phase"
+              - "Update repository URL from placeholder to actual GitHub URL"
+              - "Consider adding 'private: true' until ready for npm distribution"
+              - "Align description with current reality"
+            estimate: "10 min"
+
+        "5.5.2_cleanup_obsolete_files":
+          duration: "30 min"
+          priority: "P1 - Important"
+
+          files_to_archive:
+            location: "docs/archive/ or delete entirely"
+            files:
+              - "READY-TO-DISTRIBUTE.md - obsolete structure"
+              - "DISTRIBUTION-CHECKLIST.md - superseded by build scripts"
+              - "STORY-1.1-COMPLETE.md - session note, archive"
+              - "RAPID-AI-BMAD-WORKFLOW-PLAN.md - superseded by YAML plan"
+              - "MIGRATION_STORY.md - historical context, archive"
+            action: "mkdir -p docs/archive && git mv <files> docs/archive/"
+
+          files_to_evaluate:
+            - "developer-notes.md - check if current, update or archive"
+            - "AGENTS.md - keep minimal or expand in Phase 5?"
+
+        "5.5.3_verify_implementation":
+          duration: "30 min"
+          priority: "P1 - Important"
+
+          audit_documentation_workflow:
+            question: "Are detection/AI analysis/completion gate features implemented?"
+            files_to_check:
+              - "src/core/scripts/doc-detection.sh"
+              - "src/core/scripts/task-completion-verification.sh"
+              - "src/core/checklists/documentation-currency-checklist.md"
+            action: "If not implemented, mark as 'Planned' in CLAUDE.md and README.md"
+
+          audit_embercare_compatibility:
+            question: "Does EmberCare actually work with current RAPID-AI?"
+            test_plan:
+              - "Run ./scripts/build-dist.sh"
+              - "Run ./scripts/install-to-project.sh /path/to/EmberCare"
+              - "Test basic functionality"
+            action: "Update compatibility claims based on actual test results"
+            fallback: "Document migration path if breaking changes occurred"
+
+        "5.5.4_create_architecture_doc":
+          duration: "30 min"
+          priority: "P2 - Nice to have"
+
+          file: "docs/ARCHITECTURE.md"
+          purpose: "Comprehensive explanation of restructuring"
+          sections:
+            - "Source vs Distribution Design"
+            - "Three-layer architecture (core/adapters/prompts)"
+            - "Dual-mode framework explanation"
+            - "Build system overview"
+            - "Migration from BMAD to RAPID"
+            - "Phase 1-4 transformation summary"
+
+        "5.5.5_update_agents_md":
+          duration: "15 min"
+          priority: "P2 - Nice to have"
+
+          file: "AGENTS.md"
+          current_state: "Accurate but terse"
+          options:
+            option_1: "Keep minimal (current approach)"
+            option_2: "Expand to match CLAUDE.md depth"
+            option_3: "Delete and reference CLAUDE.md only"
+          recommendation: "Keep minimal but add Phase 1-4 completion note"
+
+      verification_checklist:
+        - "README.md accurately reflects Phase 1-4 completion"
+        - "CLAUDE.md clearly separates implemented vs planned features"
+        - "package.json describes actual file structure"
+        - "Obsolete files archived or deleted"
+        - "Documentation workflow features marked as implemented or planned"
+        - "EmberCare compatibility claim verified or updated"
+        - "Roadmap status consistent across all files"
+        - "All file paths in docs reference correct locations (src/, dist/)"
+
+      completion_criteria:
+        - "New contributor can read README.md and understand current project state"
+        - "CLAUDE.md provides accurate guidance for development"
+        - "No contradictions between different documentation files"
+        - "Obsolete files removed from root directory"
+        - "package.json describes real, existing files"
+        - "All Phase 1-4 changes reflected in documentation"
+
+      documentation_updates:
+        files:
+          - file: "PHASE-5.5-COMPLETE.md"
+            action: "Create completion summary for Phase 5.5"
+            content:
+              - "List all documentation fixes applied"
+              - "List obsolete files archived/deleted"
+              - "Verification results (implementation audit, compatibility test)"
+              - "Updated file counts and structure"
+          - file: "rapid-ai-restructuring-implementation-plan.yaml"
+            changes:
+              - "Mark phase_5_5.status: 'Complete'"
+              - "Add completion timestamp"
+              - "Update progress percentage"
+
+      lessons_learned_preemptive:
+        what_went_well:
+          - "Implementation plan YAML provided single source of truth"
+          - "Deep analysis caught misalignments before they caused confusion"
+          - "Systematic approach to documentation review"
+
+        areas_for_improvement:
+          - "Update documentation incrementally during implementation phases"
+          - "Add 'documentation debt' tracking to each phase completion"
+          - "Consider documentation review as part of phase definition of done"
+
+        recommendations:
+          - "Phase 5 should include both new content AND alignment fixes"
+          - "Future phases should include documentation updates in task estimates"
+          - "Consider README.md as 'public API' - keep it current always"
+
+    # ==========================================================================
     # PHASE 6: Testing
     # ==========================================================================
     phase_6:
@@ -876,18 +1105,20 @@ implementation_plan:
       mitigation: "Simple bash scripts, manual testing, clear rollback plan"
 
   timeline:
-    total_estimate: "11-14 hours"
+    total_estimate: "13-16 hours"
     breakdown:
-      - "Phase 1: 1-2 hours"
-      - "Phase 2: 4-6 hours"
-      - "Phase 3: 2 hours"
-      - "Phase 4: 30 min"
-      - "Phase 5: 1 hour"
-      - "Phase 6: 2 hours"
+      - "Phase 1: 1-2 hours (✅ Complete: ~1.5 hours)"
+      - "Phase 2: 4-6 hours (✅ Complete: ~1.5 hours - 75% faster)"
+      - "Phase 3: 2 hours (✅ Complete: ~2 hours)"
+      - "Phase 4: 30 min (✅ Complete: ~1 hour)"
+      - "Phase 5: 1 hour (⏳ Not Started)"
+      - "Phase 5.5: 2 hours (⏳ Not Started - Added 2025-10-24)"
+      - "Phase 6: 2 hours (⏳ Not Started)"
 
     suggested_sessions:
-      session_1: "Phases 1-2 (5-8 hours)"
-      session_2: "Phases 3-6 (6 hours)"
+      session_1: "Phases 1-2 (5-8 hours) - ✅ Complete"
+      session_2: "Phases 3-4 (2.5 hours) - ✅ Complete"
+      session_3: "Phases 5-5.5-6 (5 hours) - ⏳ Not Started"
 
   next_immediate_actions:
     - "Fix timeout bug in current Story 1.1 (30 min)"
