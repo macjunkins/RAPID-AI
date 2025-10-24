@@ -87,24 +87,18 @@ RAPID transforms you into a "Vibe CEO" - directing a team of specialized AI agen
 **Best for**: Cursor, Claude Code, Windsurf, Trae, Cline, Roo Code, Github Copilot users
 
 ```bash
-# Interactive installation (recommended)
-npx bmad-method install
+# Install RAPID-AI VS Code tasks into an existing project (run from repo root)
+./scripts/install-to-project.sh /path/to/project
 ```
 
 **Installation Steps**:
 
-- Choose "Complete installation"
-- Select your IDE from supported options:
-  - **Cursor**: Native AI integration
-  - **Claude Code**: Anthropic's official IDE
-  - **Windsurf**: Built-in AI capabilities
-  - **Trae**: Built-in AI capabilities
-  - **Cline**: VS Code extension with AI features
-  - **Roo Code**: Web-based IDE with agent support
-  - **GitHub Copilot**: VS Code extension with AI peer programming assistant
-  - **Auggie CLI (Augment Code)**: AI-powered development environment
+- Provide the target project path (defaults to current directory)
+- The script creates a timestamped backup of any existing `.vscode/`
+- `dist/.vscode/` is copied into the target project
+- Follow the prompts to select project type (Flutter, React, Python, Go, or generic)
 
-**Note for VS Code Users**: RAPID-METHOD™ assumes when you mention "VS Code" that you're using it with an AI-powered extension like GitHub Copilot, Cline, or Roo. Standard VS Code without AI capabilities cannot run RAPID agents. The installer includes built-in support for Cline and Roo.
+**Note for VS Code Users**: RAPID-AI assumes you're running an AI-enhanced environment (Cline, Roo Code, Copilot, etc.). Standard VS Code without AI cannot execute the conversational workflows. The install script keeps configuration editable so you can wire it to your preferred extension.
 
 **Verify Installation**:
 
@@ -156,23 +150,23 @@ npx bmad-method install
 - **Why it matters**: Dev agents are kept lean to maximize coding context
 - **The principle**: "Dev agents code, planning agents plan" - mixing breaks this optimization
 
-**About bmad-master and bmad-orchestrator**:
+**About rapid-master (legacy orchestrator)**:
 
-- **bmad-master**: CAN do any task without switching agents, BUT...
-- **Still use specialized agents for planning**: PM, Architect, and UX Expert have tuned personas that produce better results
-- **Why specialization matters**: Each agent's personality and focus creates higher quality outputs
-- **If using bmad-master/orchestrator**: Fine for planning phases, but...
+- **rapid-master**: CAN do any task without switching agents, BUT rapid works best when you lean on the specialized roles.
+- **Still use specialized agents for planning**: PM, Architect, and UX Expert have tuned personas that produce better results.
+- **Why specialization matters**: Each agent's personality and focus creates higher quality outputs.
+- **If you stay with rapid-master**: Fine for planning phases, but switch to the purpose-built agents for delivery work.
 
 **CRITICAL RULE for Development**:
 
-- **ALWAYS use SM agent for story creation** - Never use bmad-master or bmad-orchestrator
-- **ALWAYS use Dev agent for implementation** - Never use bmad-master or bmad-orchestrator
-- **Why this matters**: SM and Dev agents are specifically optimized for the development workflow
-- **No exceptions**: Even if using bmad-master for everything else, switch to SM → Dev for implementation
+- **ALWAYS use SM agent for story creation** - Don't ship stories directly from rapid-master.
+- **ALWAYS use Dev agent for implementation** - Keep rapid-master out of coding sessions to preserve determinism.
+- **Why this matters**: SM and Dev agents are specifically optimized for the development workflow.
+- **No exceptions**: Even if using rapid-master for everything else, switch to SM → Dev for implementation.
 
 **Best Practice for IDE-Only**:
 
-1. Use PM/Architect/UX agents for planning (better than bmad-master)
+1. Use PM/Architect/UX agents for planning (better focus than rapid-master)
 2. Create documents directly in project
 3. Shard immediately after creation
 4. **MUST switch to SM agent** for story creation
@@ -288,10 +282,9 @@ You are the "Vibe CEO" - thinking like a CEO with unlimited resources and a sing
 
 ### Meta Agents
 
-| Agent               | Role             | Primary Functions                     | When to Use                       |
-| ------------------- | ---------------- | ------------------------------------- | --------------------------------- |
-| `bmad-orchestrator` | Team Coordinator | Multi-agent workflows, role switching | Complex multi-role tasks          |
-| `bmad-master`       | Universal Expert | All capabilities without switching    | Single-session comprehensive work |
+| Agent           | Role             | Primary Functions                     | When to Use                       |
+| --------------- | ---------------- | ------------------------------------- | --------------------------------- |
+| `rapid-master`  | Universal Expert | All capabilities without switching    | Single-session comprehensive work |
 
 ### Agent Interaction Commands
 
@@ -300,10 +293,10 @@ You are the "Vibe CEO" - thinking like a CEO with unlimited resources and a sing
 **Agent Loading by IDE**:
 
 - **Claude Code**: `/agent-name` (e.g., `/rapid`)
-- **Cursor**: `@agent-name` (e.g., `@bmad-master`)
+- **Cursor**: `@agent-name` (e.g., `@rapid-master`)
 - **Windsurf**: `/agent-name` (e.g., `/rapid`)
-- **Trae**: `@agent-name` (e.g., `@bmad-master`)
-- **Roo Code**: Select mode from mode selector (e.g., `bmad-master`)
+- **Trae**: `@agent-name` (e.g., `@rapid-master`)
+- **Roo Code**: Select mode from mode selector (e.g., `rapid-master`)
 - **GitHub Copilot**: Open the Chat view (`⌃⌘I` on Mac, `Ctrl+Alt+I` on Windows/Linux) and select **Agent** from the chat mode selector.
 
 **Chat Management Guidelines**:
@@ -356,7 +349,7 @@ You are the "Vibe CEO" - thinking like a CEO with unlimited resources and a sing
 
 ### System Overview
 
-The RAPID-METHOD™ is built around a modular architecture centered on the `bmad-core` directory, which serves as the brain of the entire system. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
+The RAPID-AI framework is built around a modular architecture centered on the `src/rapid/` directory, which now serves as the brain of the entire system. Legacy `.bmad-*` directories were retired in Phase 4, leaving RAPID as the single source of truth. This design enables the framework to operate effectively in both IDE environments (like Cursor, VS Code) and web-based AI interfaces (like ChatGPT, Gemini).
 
 ### Key Architectural Components
 
@@ -367,19 +360,13 @@ The RAPID-METHOD™ is built around a modular architecture centered on the `bmad
 - **Dependencies**: Lists of tasks, templates, checklists, and data files the agent can use
 - **Startup Instructions**: Can load project-specific documentation for immediate context
 
-#### 2. Agent Teams (`src/rapid/agent-teams/`)
-
-- **Purpose**: Define collections of agents bundled together for specific purposes
-- **Examples**: `team-all.yaml` (comprehensive bundle), `team-fullstack.yaml` (full-stack development)
-- **Usage**: Creates pre-packaged contexts for web UI environments
-
-#### 3. Workflows (`src/rapid/workflows/`)
+#### 2. Workflows (`src/rapid/workflows/`)
 
 - **Purpose**: YAML files defining prescribed sequences of steps for specific project types
 - **Types**: Greenfield (new projects) and Brownfield (existing projects) for UI, service, and fullstack development
 - **Structure**: Defines agent interactions, artifacts created, and transition conditions
 
-#### 4. Reusable Resources
+#### 3. Reusable Resources
 
 - **Templates** (`src/rapid/templates/`): Markdown templates for PRDs, architecture specs, user stories
 - **Tasks** (`src/rapid/tasks/`): Instructions for specific repeatable actions like "shard-doc" or "create-next-story"
@@ -483,7 +470,7 @@ that can handle [specific requirements]."
    - Documents created by PM/Architect (in Web or IDE) MUST be sharded for development
    - Two methods to shard:
      a) **Manual**: Drag `shard-doc` task + document file into chat
-     b) **Agent**: Ask `@bmad-master` or `@po` to shard documents
+     b) **Agent**: Ask `@rapid-master` or `@po` to shard documents
    - Shards `docs/prd.md` → `docs/prd/` folder
    - Shards `docs/architecture.md` → `docs/architecture/` folder
    - **WARNING**: Do NOT shard in Web UI - copying many small files is painful!
@@ -698,7 +685,7 @@ Use the `shard-doc` task or `@kayvan/markdown-tree-parser` tool for automatic sh
 
 ### Performance Optimization
 
-- Use specific agents vs. `bmad-master` for focused tasks
+- Use specific agents vs. `rapid-master` for focused tasks
 - Choose appropriate team size for project needs
 - Leverage technical preferences for consistency
 - Regular context management and cache clearing
@@ -706,7 +693,7 @@ Use the `shard-doc` task or `@kayvan/markdown-tree-parser` tool for automatic sh
 ## Success Tips
 
 - **Use Gemini for big picture planning** - The team-fullstack bundle provides collaborative expertise
-- **Use bmad-master for document organization** - Sharding creates manageable chunks
+- **Use rapid-master for document organization** - Sharding creates manageable chunks
 - **Follow the SM → Dev cycle religiously** - This ensures systematic progress
 - **Keep conversations focused** - One agent, one task per conversation
 - **Review everything** - Always review and approve before marking complete
@@ -780,12 +767,7 @@ Expansion packs extend RAPID-METHOD™ beyond traditional software development i
 
 1. **Browse Available Packs**: Check `expansion-packs/` directory
 2. **Get Inspiration**: See `docs/expansion-packs.md` for detailed examples and ideas
-3. **Install via CLI**:
-
-   ```bash
-   npx bmad-method install
-   # Select "Install expansion pack" option
-   ```
+3. **Install manually for now**: CLI-based installation returns in a later phase. Copy the desired pack into your project and update `rapid-config.yaml` accordingly.
 
 4. **Use in Your Workflow**: Installed packs integrate seamlessly with existing agents
 

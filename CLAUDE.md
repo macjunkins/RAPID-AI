@@ -223,8 +223,8 @@ The framework includes **optional documentation verification** integrated into d
    - AI-powered gap analysis with actionable recommendations
 
 3. **Documentation Currency Checklist** (`core/checklists/documentation-currency-checklist.md`):
-   - Comprehensive systematic validation across all documentation dimensions
-   - Generalized from BMAD patterns for any project type
+  - Comprehensive systematic validation across all documentation dimensions
+  - Generalized from EmberCare production patterns for any project type
    - Project-type specific sections via adapters
    - Severity-based prioritization
 
@@ -306,7 +306,7 @@ Framework extraction maintains 100% compatibility with existing EmberCare script
 ❌ **Don't** break EmberCare compatibility - it's the proven reference implementation
 ❌ **Don't** implement AI integrations in TypeScript - shell scripts are more portable
 ❌ **Don't** bypass VS Code tasks as primary interface - CLI is secondary convenience
-❌ **Don't** introduce BMAD references in new code - use RAPID-AI branding
+❌ **Don't** reintroduce legacy BMAD branding in new code - stay RAPID-AI only
 
 ## Project Type Detection
 

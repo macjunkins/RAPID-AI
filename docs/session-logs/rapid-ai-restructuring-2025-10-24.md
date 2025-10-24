@@ -10,11 +10,30 @@
 
 This session completed **Phase 1** of the RAPID-AI Architecture Restructuring plan and established a comprehensive documentation workflow for all subsequent phases.
 
+_2025-10-24 Codex logged docs/docs/feat/build commits and pushed the branch._
+
 **Key Accomplishments**:
 1. ✅ Created src/dist structure with build infrastructure
 2. ✅ Updated CLAUDE.md with new architecture
 3. ✅ Added documentation update steps to all 6 phases in WIP-SESSION YAML
 4. ✅ Established session log workflow (this file)
+
+---
+
+## Phase 4 Update: Legacy Cleanup (2025-10-24)
+
+**Status**: Phase 4 Complete ✅  
+**Focus**: Retire legacy BMAD assets and reinforce RAPID-only workflows.
+
+### Highlights
+- Removed `.bmad-core/` and `.bmad-infrastructure-devops/` directories after verifying all assets live under `src/rapid/`.
+- Deleted one-time migration helpers and tightened validation to block residual BMAD branding in `dist/.vscode/`.
+- Updated key documentation (`CLAUDE.md`, `README.md`, `READY-TO-DISTRIBUTE.md`, `AGENTS.md`) to reflect RAPID-only guidance.
+- Added `PHASE-4-COMPLETE.md` with verification evidence and next steps.
+
+### Outstanding Items
+- Sync remaining documentation references that still describe the extraction process (keep for historical context but flag as legacy where helpful).
+- Resume Phase 5 documentation polish once architecture notes are refreshed.
 
 ---
 

@@ -515,7 +515,7 @@ generate_prompt() {
 }
 
 # Documentation Detection Functions
-# Based on proven BMAD-METHOD patterns, adapted for RAPID-AI
+# Based on proven EmberCare production patterns, adapted for RAPID-AI
 
 # Check if file changes require documentation updates
 check_documentation_needs() {

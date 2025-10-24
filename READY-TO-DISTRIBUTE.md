@@ -102,9 +102,10 @@ RAPID-AI/
 ├── docs/                       # ← RAPID-AI's own docs (keep)
 ├── src/                        # ← CLI wrapper (not needed for MVP)
 ├── package.json                # ← npm package (not needed for MVP)
-├── .bmad-core/                 # ← Will remove in Epic 4
 └── ... other files
 ```
+
+Legacy `.bmad-*` directories were removed in Phase 4 to keep the workspace RAPID-only.
 
 **For EmberCare:** Only `.vscode/` is copied. Root files stay in RAPID-AI.
 
@@ -116,8 +117,7 @@ After testing `.vscode/` works:
 
 1. **Keep:** `docs/`, `.vscode/`, `README.md`
 2. **Archive:** `core/` (old location), `templates/`
-3. **Remove:** `.bmad-core/` (Epic 4)
-4. **Optional:** `src/`, `package.json` (CLI can come later)
+3. **Optional:** `src/`, `package.json` (CLI comes in a later phase)
 
 **Focus now:** Test `.vscode/` works, distribute to EmberCare.
 

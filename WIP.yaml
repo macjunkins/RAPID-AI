@@ -339,29 +339,32 @@ implementation_plan:
                 - "Add completion timestamp"
 
     phase_4:
-      status: "not started"
-      name: "Delete .bmad-core/"
-      duration: "30 min"
-      goal: "Remove BMAD directories after successful extraction"
+      status: "Complete"
+      completed: "2025-10-24"
+      name: "Retire Legacy BMAD Assets"
+      duration: "30 min (actual: ~45 min)"
+      goal: "Remove legacy BMAD directories and tooling after successful extraction"
 
       verification_checklist:
-        - "All 26 tasks extracted to src/rapid/tasks/"
-        - "All 13 templates extracted to src/rapid/templates/"
-        - "All 6 checklists extracted to src/rapid/checklists/"
-        - "All 6 workflows extracted to src/rapid/workflows/"
-        - "rapid-config.yaml created"
-        - "rapid-master.md created"
-        - "All BMAD branding removed from extracted files"
+        - "All RAPID tasks confirmed in src/rapid/tasks/ (27 files including summary)"
+        - "All templates confirmed in src/rapid/templates/ (15 files)"
+        - "All checklists confirmed in src/rapid/checklists/ (7 files)"
+        - "All workflows confirmed in src/rapid/workflows/ (6 files)"
+        - "rapid-config.yaml present"
+        - "rapid-master.md present"
+        - "No BMAD branding in dist/ or active scripts"
 
       actions:
-        - "Archive: mkdir archive/ && mv .bmad-core archive/"
-        - "Test: Build dist and verify functionality"
-        - "Delete: rm -rf archive/.bmad-core (after testing)"
+        - "Delete legacy .bmad-core/ and .bmad-infrastructure-devops/ directories"
+        - "Remove one-time migration helpers from scripts/"
+        - "Refresh validation script checks for legacy branding"
+        - "Build dist and verify functionality"
 
       also_delete:
-        - ".bmad-infrastructure-devops/ (separate BMAD module)"
-        - "AGENTS.md (BMAD-specific)"
-        - "npm run bmad:* scripts from package.json"
+        - "scripts/transform-templates.py (one-time helper)"
+        - "scripts/debrand-tasks.sh (one-time helper)"
+        - "npm run bmad:* scripts from package.json (removed)"
+        - "AGENTS.md retained; align guidance with CLAUDE.md"
 
       documentation_updates:
         duration: "15 min"
@@ -369,13 +372,12 @@ implementation_plan:
         files:
           - file: "CLAUDE.md"
             changes:
-              - "Remove all BMAD references"
-              - "Verify RAPID-only documentation"
-              - "Update architecture diagrams"
+              - "Reword documentation workflow guidance to reference EmberCare patterns"
+              - "Reinforce RAPID-only branding expectations"
           - file: "README.md"
             changes:
-              - "Remove BMAD acknowledgments (if any)"
-              - "Ensure only RAPID-AI branding"
+              - "Update roadmap to reflect RAPID-only cleanup work"
+              - "Remove CLI distribution messaging until later phases"
           - file: "package.json"
             changes:
               - "Remove bmad:* scripts"

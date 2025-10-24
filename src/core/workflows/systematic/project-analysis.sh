@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Project Analysis Workflow
-# Extracted from BMAD systematic workflows
+# Extracted from EmberCare systematic workflows
 # Adapted for RAPID-AI direct AI integration
 
 set -e

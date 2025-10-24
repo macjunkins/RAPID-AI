@@ -10,13 +10,12 @@
 ## Architecture
 - Source of truth lives in `src/`, covering the CLI (`src/cli.js`), rapid workflows (`src/rapid/**`), shared helpers (`src/core/**`), adapters (`src/adapters/**`), prompts (`src/prompts/**`), and schemas.
 - Distribution artifacts land in `dist/`, generated via build scripts; never edit them directly.
-- `.bmad-core/` and `.bmad-infrastructure-devops/` house extracted BMAD workflows, checklists, templates, and infrastructure scaffolding that must stay mirrored with runtime copies under `src/rapid`.
+- `src/rapid/**` is the canonical home for conversational workflows, templates, tasks, and knowledge base assets (legacy `.bmad-*` directories were removed in Phase 4).
 - `templates/` and `.vscode/` provide reusable task definitions for new projects and for dogfooding.
 
 ## Development Commands
 - `./scripts/build-dist.sh`, `./scripts/validate-structure.sh`, and `./scripts/install-to-project.sh` manage the source/dist sync.
 - `npm run build`, `npm run dev`, `npm test`, and `npm start` support CLI development, watch mode, testing, and runtime verification.
-- BMAD helpers (`npm run bmad:refresh`, `npm run bmad:list`, `npm run bmad:validate`) keep agent metadata synchronized.
 
 ## Critical Patterns
 - VS Code tasks (see `templates/vscode/tasks.json`) are the primary interface; ensure problem matchers and input variables remain accurate.
@@ -25,7 +24,7 @@
 
 ## Configuration
 - `.ai-workflow.yaml` drives project type detection, tool selection, and workflow toggles; keep it kebab-case and validated.
-- `src/rapid/rapid-config.yaml` and related configs govern conversational agent behavior; updates must mirror `.bmad-core/` definitions.
+- `src/rapid/rapid-config.yaml` and related configs govern conversational agent behavior; keep them synchronized with the assets in `src/rapid/`.
 - YAML schemas in `src/schemas/` enforce structure for generated docs; adjust them alongside related prompts/templates.
 
 ## File Structure & Outputs
@@ -45,7 +44,7 @@
 
 ## Key Constraints & Anti-Patterns
 - Preserve POSIX compatibility in shell scripts; avoid TypeScript-based AI integrations.
-- Maintain EmberCare backward compatibility, and never reintroduce BMAD branding in extracted assets.
+- Maintain EmberCare backward compatibility, and never reintroduce legacy BMAD branding in the active assets.
 - Do not hardcode AI prompts in the CLI; extend adapters or prompt templates instead.
 - Favor task-driven workflows over direct CLI invocations unless instrumentation demands otherwise.
 
@@ -59,4 +58,4 @@
 ## Integration Points
 - VS Code tasks supply the primary UX; document any task additions or changes.
 - Git workflow aligns with Conventional Commits, references relevant stories/checklists, and pairs PRs with test evidence.
-- Request reviews from maintainers responsible for the touched subsystems (`src/rapid`, `.bmad-*`, adapters, etc.).
+- Request reviews from maintainers responsible for the touched subsystems (`src/rapid`, adapters, core tooling, etc.).
