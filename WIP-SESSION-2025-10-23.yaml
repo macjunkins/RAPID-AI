@@ -1,3 +1,404 @@
+# ============================================================================
+# IMPLEMENTATION PLAN: RAPID-AI Architecture Restructuring & BMAD Extraction
+# ============================================================================
+#
+# This plan transforms RAPID-AI from dual-system (BMAD + RAPID) into unified
+# YAML-first framework with both conversational and execution modes.
+#
+# Total Estimate: 11-14 hours across 2 sessions
+# ============================================================================
+
+implementation_plan:
+  vision: |
+    Unified RAPID-AI framework combining:
+    - Conversational workflows (extracted & de-branded BMAD)
+    - YAML-first execution (deterministic code generation)
+    - Single .vscode/ drop-in distribution
+
+  end_state_structure: |
+    RAPID-AI/
+    ├── src/                          # SOURCE CODE
+    │   ├── core/                     # Execution framework (YAML workflows)
+    │   ├── rapid/                    # Conversational framework (extracted BMAD)
+    │   ├── adapters/                 # Project-specific (Flutter, React)
+    │   ├── prompts/                  # AI prompt templates
+    │   └── schemas/                  # YAML validation schemas
+    │
+    ├── dist/                         # DISTRIBUTION BUNDLE
+    │   └── .vscode/                  # Ready to drop into any project
+    │       ├── tasks.json
+    │       ├── core/                 # Built execution framework
+    │       ├── rapid/                # Built conversational framework
+    │       └── README.md
+    │
+    ├── docs/                         # RAPID-AI's own specs (YAML)
+    ├── scripts/                      # Build and install scripts
+    └── [DELETE: .bmad-core/, .bmad-infrastructure-devops/]
+
+  phases:
+    phase_1:
+      name: "Create src/dist Structure"
+      duration: "1-2 hours"
+      goal: "Establish source vs distribution separation"
+
+      tasks:
+        - task: "Create directory structure"
+          actions:
+            - "mkdir -p src/{core,rapid,adapters,prompts,schemas}"
+            - "mkdir -p dist/.vscode"
+            - "mkdir -p scripts"
+
+        - task: "Move existing code to src/"
+          actions:
+            - "mv core/ src/core/"
+            - "mv adapters/ src/adapters/"
+            - "Keep .vscode/core/ temporarily (will rebuild)"
+
+        - task: "Create build infrastructure"
+          files_to_create:
+            - "scripts/build-dist.sh - Build dist/.vscode/ from src/"
+            - "scripts/validate-structure.sh - Verify directory structure"
+            - "scripts/install-to-project.sh - Install to target project"
+
+    phase_2:
+      name: "Extract BMAD → src/rapid/"
+      duration: "4-6 hours"
+      goal: "De-brand and preserve valuable BMAD workflows"
+
+      inventory:
+        agents: "10 files → 1 unified rapid-master.md"
+        tasks: "26 files → de-branded, workflow logic preserved"
+        templates: "13 files → YAML format, BMAD branding removed"
+        checklists: "6 files → simplified, ceremony removed"
+        workflows: "6 files → preserved"
+        data: "4 files → evaluate usefulness"
+
+      sub_phases:
+        "2.1_create_structure":
+          duration: "30 min"
+          action: "Create src/rapid/ directory tree"
+          structure: |
+            src/rapid/
+            ├── agents/rapid-master.md
+            ├── tasks/ (26 de-branded task files)
+            ├── templates/ (13 YAML templates)
+            ├── checklists/ (6 simplified checklists)
+            ├── workflows/ (6 workflow definitions)
+            └── rapid-config.yaml
+
+        "2.2_extract_agents":
+          duration: "1 hour"
+          actions:
+            - "Copy .bmad-core/agents/bmad-master.md → src/rapid/agents/rapid-master.md"
+            - "Strip: All 'BMAD™', 'BMad' branding"
+            - "Replace: '/bmad-master' → '/rapid'"
+            - "Remove: Persona ceremony, activation instructions"
+            - "Delete: Other 9 specialized agents (functionality in rapid-master)"
+
+        "2.3_debrand_tasks":
+          duration: "2-3 hours"
+          process: "For each of 26 task files:"
+          steps:
+            - "Remove: '<!-- Powered by BMAD™ Core -->'"
+            - "Remove: Persona-specific instructions"
+            - "Keep: Workflow logic intact"
+            - "Update: File paths '.bmad-core/' → '.rapid/'"
+            - "Convert: To YAML where beneficial"
+
+          priority_tasks:
+            - "brownfield-create-epic.md"
+            - "brownfield-create-story.md"
+            - "create-doc.md"
+            - "document-project.md"
+            - "advanced-elicitation.md"
+            - "execute-checklist.md"
+            - "create-next-story.md"
+            - "shard-doc.md"
+
+          evaluate_removal:
+            - "kb-mode-interaction.md (if KB not useful)"
+            - "nfr-assess.md (if not used)"
+
+        "2.4_convert_templates":
+          duration: "1 hour"
+          action: "Convert 13 templates to clean YAML format"
+
+          before: |
+            # <!-- Powered by BMAD™ Core -->
+            template:
+              id: story-template-v2
+
+          after: |
+            template:
+              id: story-template
+              version: 3.0
+              framework: RAPID-AI
+
+          templates:
+            - "prd-tmpl.yaml"
+            - "story-tmpl.yaml"
+            - "architecture-tmpl.yaml"
+            - "brownfield-prd-tmpl.yaml"
+            - "brownfield-architecture-tmpl.yaml"
+            - "front-end-architecture-tmpl.yaml"
+            - "front-end-spec-tmpl.yaml"
+            - "fullstack-architecture-tmpl.yaml"
+            - "competitor-analysis-tmpl.yaml"
+            - "market-research-tmpl.yaml"
+            - "project-brief-tmpl.yaml"
+            - "qa-gate-tmpl.yaml"
+            - "brainstorming-output-tmpl.yaml"
+
+        "2.5_simplify_checklists":
+          duration: "30 min"
+          action: "Remove ceremony, keep practical validation"
+
+          keep:
+            - "story-dod-checklist.md - Quality gates"
+            - "story-draft-checklist.md - Story creation"
+
+          evaluate:
+            - "architect-checklist.md - Simplify or remove"
+            - "pm-checklist.md - Simplify or remove"
+            - "po-master-checklist.md - Evaluate usefulness"
+            - "change-checklist.md - Evaluate usefulness"
+
+        "2.6_update_config":
+          duration: "30 min"
+          action: "Create rapid-config.yaml from core-config.yaml"
+
+          changes:
+            - "slashPrefix: BMad → rapid"
+            - "prdFile: docs/prd.md → docs/prd.yaml"
+            - "epicFilePattern: epic-{n}*.md → epic-{n}*.yaml"
+            - "Add: framework: RAPID-AI"
+            - "Add: version: 2.0"
+
+    phase_3:
+      name: "Build Distribution System"
+      duration: "2 hours"
+      goal: "Create build scripts for dist/.vscode/ bundle"
+
+      tasks:
+        "3.1_build_script":
+          file: "scripts/build-dist.sh"
+          purpose: "Build dist/.vscode/ from src/"
+          logic: |
+            #!/bin/bash
+            # Clean
+            rm -rf dist/.vscode
+            mkdir -p dist/.vscode/{core,rapid}
+
+            # Copy frameworks
+            cp -r src/core/* dist/.vscode/core/
+            cp -r src/rapid/* dist/.vscode/rapid/
+
+            # Copy VS Code config
+            cp templates/vscode/tasks.json dist/.vscode/
+            cp templates/vscode/README.md dist/.vscode/
+
+            # Make executable
+            chmod +x dist/.vscode/core/scripts/*.sh
+
+            echo "✅ Built dist/.vscode/"
+
+        "3.2_install_script":
+          file: "scripts/install-to-project.sh"
+          purpose: "Install to target project (e.g., EmberCare)"
+          usage: "./scripts/install-to-project.sh /path/to/EmberCare"
+          logic: |
+            #!/bin/bash
+            TARGET=$1
+            cp -r dist/.vscode "$TARGET/"
+            echo "✅ Installed to $TARGET/.vscode/"
+
+        "3.3_update_vscode_tasks":
+          file: "templates/vscode/tasks.json"
+          action: "Add RAPID conversational tasks"
+          new_tasks:
+            - "RAPID: Conversational Mode - Instructions"
+            - "RAPID: Create Document"
+            - "RAPID: Execute Task"
+            - "RAPID: Run Checklist"
+
+    phase_4:
+      name: "Delete .bmad-core/"
+      duration: "30 min"
+      goal: "Remove BMAD directories after successful extraction"
+
+      verification_checklist:
+        - "All 26 tasks extracted to src/rapid/tasks/"
+        - "All 13 templates extracted to src/rapid/templates/"
+        - "All 6 checklists extracted to src/rapid/checklists/"
+        - "All 6 workflows extracted to src/rapid/workflows/"
+        - "rapid-config.yaml created"
+        - "rapid-master.md created"
+        - "All BMAD branding removed from extracted files"
+
+      actions:
+        - "Archive: mkdir archive/ && mv .bmad-core archive/"
+        - "Test: Build dist and verify functionality"
+        - "Delete: rm -rf archive/.bmad-core (after testing)"
+
+      also_delete:
+        - ".bmad-infrastructure-devops/ (separate BMAD module)"
+        - "AGENTS.md (BMAD-specific)"
+        - "npm run bmad:* scripts from package.json"
+
+    phase_5:
+      name: "Update Documentation"
+      duration: "1 hour"
+      goal: "Document dual-mode framework"
+
+      files_to_update:
+        "CLAUDE.md":
+          add_section: |
+            ## RAPID-AI Dual-Mode Framework
+
+            ### Conversational Mode (Discovery & Planning)
+            Use when: Exploring, brainstorming, creating specs
+            Activation: `/rapid` in Claude CLI
+            Commands:
+              - `/rapid:create-doc {template}` - Create PRD, Epic, Story
+              - `/rapid:task brownfield-create-epic` - Brownfield workflows
+              - `/rapid:checklist story-dod` - Quality gates
+
+            ### Execution Mode (Deterministic Implementation)
+            Use when: Generating code from YAML specs
+            Activation: VS Code tasks
+            Tasks:
+              - "RAPID: Generate Story from Epic" - YAML story generation
+              - "RAPID: Validate YAML" - Schema validation
+
+        "README.md":
+          replace_with: |
+            # RAPID-AI 2.0
+
+            Unified AI development framework combining:
+            - **Conversational workflows** for discovery & planning
+            - **YAML-first execution** for deterministic code generation
+
+            ## Quick Start
+
+            ### Drop into Any Project
+            ```bash
+            cp -r RAPID-AI/dist/.vscode /path/to/your-project/
+            ```
+
+            ### Use Conversational Mode
+            ```bash
+            claude
+            /rapid
+            /rapid:create-doc prd-tmpl
+            ```
+
+            ### Use Execution Mode
+            ```
+            Cmd+Shift+P → "RAPID: Generate Story from Epic"
+            ```
+
+        "docs/ARCHITECTURE.md":
+          create_new: |
+            # RAPID-AI Architecture
+
+            ## src/ - Source Code
+            - core/ - Execution framework (YAML workflows)
+            - rapid/ - Conversational framework (extracted BMAD)
+            - adapters/ - Project-specific (Flutter, React)
+            - schemas/ - YAML validation
+
+            ## dist/ - Distribution
+            - .vscode/ - Drop-in directory for any project
+
+            ## docs/ - Specifications
+            - prd.yaml, prd/*.yaml - Product specs
+            - stories/*.yaml - Story specs
+            - architecture/*.yaml - Technical decisions
+
+    phase_6:
+      name: "Testing"
+      duration: "2 hours"
+      goal: "Validate both modes work in RAPID-AI and EmberCare"
+
+      "6.1_test_rapid_ai":
+        duration: "1 hour"
+        steps:
+          - "Build: ./scripts/build-dist.sh"
+          - "Replace: rm -rf .vscode && cp -r dist/.vscode ."
+          - "Test conversational: /rapid in Claude CLI"
+          - "Test execution: VS Code task 'RAPID: Generate Story from Epic'"
+          - "Generate Story 1.2 using working framework"
+
+      "6.2_test_embercare":
+        duration: "1 hour"
+        steps:
+          - "Install: ./scripts/install-to-project.sh /path/to/EmberCare"
+          - "Configure: Update EmberCare/.vscode/core/config/.ai-workflow.yaml"
+          - "Test: Generate EmberCare story"
+          - "Validate: Both conversational and execution modes work"
+
+  success_criteria:
+    functional:
+      - "/rapid command works in Claude CLI"
+      - "VS Code tasks work for YAML generation"
+      - "Build script creates clean dist/.vscode/"
+      - "Installation to EmberCare successful"
+      - "Both modes (conversational + execution) functional"
+
+    structural:
+      - "All BMAD branding removed"
+      - "No .bmad-core/ or .bmad-infrastructure-devops/ directories"
+      - "Single src/ source directory"
+      - "Clean dist/ distribution"
+      - "Self-contained .vscode/ bundle"
+
+    documentation:
+      - "CLAUDE.md explains dual-mode usage"
+      - "README.md updated for RAPID-AI 2.0"
+      - "Architecture documented"
+      - "Installation instructions clear"
+
+  file_inventory:
+    files_to_create: "~15 files"
+    files_to_move: "~50 files (tasks, templates, checklists, etc.)"
+    files_to_delete: "~15 files (.bmad-core/, AGENTS.md, etc.)"
+
+  risks_and_mitigation:
+    risk_1:
+      risk: "Breaking EmberCare compatibility"
+      mitigation: "Test thoroughly in RAPID-AI first, install as new .vscode/"
+
+    risk_2:
+      risk: "Losing valuable BMAD functionality"
+      mitigation: "Archive .bmad-core/ before deletion, careful audit of 26 tasks"
+
+    risk_3:
+      risk: "Build process complexity"
+      mitigation: "Simple bash scripts, manual testing, clear rollback plan"
+
+  timeline:
+    total_estimate: "11-14 hours"
+    breakdown:
+      - "Phase 1: 1-2 hours"
+      - "Phase 2: 4-6 hours"
+      - "Phase 3: 2 hours"
+      - "Phase 4: 30 min"
+      - "Phase 5: 1 hour"
+      - "Phase 6: 2 hours"
+
+    suggested_sessions:
+      session_1: "Phases 1-2 (5-8 hours)"
+      session_2: "Phases 3-6 (6 hours)"
+
+  next_immediate_actions:
+    - "Fix timeout bug in current Story 1.1 (30 min)"
+    - "Test Story 1.1 end-to-end (30 min)"
+    - "Then begin restructuring (Phase 1)"
+
+# ============================================================================
+# END OF IMPLEMENTATION PLAN
+# ============================================================================
+
 session:
   date: "2025-10-23"
   duration: "~3 hours"
