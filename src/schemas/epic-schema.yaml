@@ -1,0 +1,131 @@
+# RAPID-AI Epic YAML Schema
+# This schema defines the structure for epic specifications
+# Used by: Epic generation scripts, validation tools, documentation
+
+schema_version: "1.0"
+description: "YAML schema for RAPID-AI epic specifications"
+
+epic:
+  required_fields:
+    - id              # Number: Epic identifier
+    - title           # String: Epic title
+    - priority        # String: critical|high|medium|low
+    - status          # String: planned|in_progress|completed
+    - description     # String: WHAT this epic achieves
+    - goals           # Array: Key outcomes
+    - stories         # Array: Story list
+
+  optional_fields:
+    - metadata        # Object: Effort, dates, assignment
+    - success_criteria   # Array: How to know epic is complete
+    - documentation     # Object: Related docs
+    - technical_requirements  # Object: Technical constraints
+    - risk_assessment       # Object: Risks and mitigation
+
+  field_definitions:
+    id:
+      type: number
+      example: 1
+      description: "Unique epic identifier"
+
+    title:
+      type: string
+      max_length: 150
+      description: "Concise epic title"
+
+    priority:
+      type: enum
+      values: [critical, high, medium, low]
+      description: "Epic priority level"
+
+    status:
+      type: enum
+      values: [planned, in_progress, completed]
+      description: "Current epic status"
+
+    description:
+      type: string
+      multiline: true
+      description: "WHAT this epic achieves - overview, scope, expected outcomes"
+
+    goals:
+      type: array
+      item_type: string
+      description: "Key outcomes this epic delivers"
+      example:
+        - "Enable YAML-first story generation"
+        - "Reduce token usage by 50-70%"
+
+    stories:
+      type: array
+      item_type: object
+      description: "List of stories in this epic"
+      fields:
+        id: string           # Story ID (e.g., "1.2")
+        title: string        # Story title
+        priority: string     # critical|high|medium|low
+        status: string       # planned|in_progress|completed
+        estimated_effort: string  # e.g., "2-3 hours"
+
+    metadata:
+      type: object
+      fields:
+        created: date         # YYYY-MM-DD
+        updated: date         # YYYY-MM-DD
+        estimated_effort: string
+        actual_effort: string|null
+        assigned_to: string
+        tags: array[string]
+
+    success_criteria:
+      type: array
+      item_type: string
+      description: "How to know the epic is complete"
+      example:
+        - "All 5 stories completed and tested"
+        - "Framework can generate its own stories"
+
+    documentation:
+      type: object
+      description: "Related documentation files"
+      fields:
+        prd: string              # Path to PRD
+        architecture: string     # Path to architecture docs
+        related: array[string]   # Other relevant docs
+
+    technical_requirements:
+      type: object
+      description: "Technical constraints and requirements"
+      example:
+        platform: "VS Code tasks + shell scripts"
+        dependencies: ["Claude CLI", "bash"]
+
+    risk_assessment:
+      type: object
+      fields:
+        risks:
+          type: array
+          item_fields:
+            risk: string
+            likelihood: string    # high|medium|low
+            impact: string        # high|medium|low
+            mitigation: string
+
+# Example validation rules
+validation:
+  rules:
+    - "id must be a positive integer"
+    - "status must be one of: planned, in_progress, completed"
+    - "priority must be one of: critical, high, medium, low"
+    - "goals must have at least one goal"
+    - "stories array can be empty but must be present"
+    - "Each story in stories array must have id and title"
+
+# Notes for implementers
+notes:
+  - "All multi-line strings should use | or > YAML syntax"
+  - "Indentation is 2 spaces per level"
+  - "Dates use ISO 8601 format (YYYY-MM-DD)"
+  - "Stories array lists all stories, not just completed ones"
+  - "Story status can change independently of epic status"
+  - "Epic is 'completed' when all stories are completed"

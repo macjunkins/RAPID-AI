@@ -1,0 +1,46 @@
+# RAPID-AI Configuration
+# Framework for AI-powered systematic development workflows
+
+# Framework metadata
+framework: RAPID-AI
+version: 2.0
+
+# Command prefix for conversational mode
+slashPrefix: rapid
+
+# Markdown document exploder (split large docs into smaller files)
+markdownExploder: true
+
+# QA gate location
+qa:
+  qaLocation: docs/qa
+
+# Product Requirements Documents (YAML-first)
+prd:
+  prdFile: docs/prd.yaml
+  prdVersion: v4
+  prdSharded: true
+  prdShardedLocation: docs/prd
+  epicFilePattern: epic-{n}*.yaml
+
+# Architecture documentation (YAML-first)
+architecture:
+  architectureFile: docs/architecture.yaml
+  architectureVersion: v4
+  architectureSharded: true
+  architectureShardedLocation: docs/architecture
+
+# Custom technical documents (project-specific)
+customTechnicalDocuments: null
+
+# Developer context files (always loaded for dev agent)
+devLoadAlwaysFiles:
+  - docs/architecture/coding-standards.md
+  - docs/architecture/tech-stack.md
+  - docs/architecture/source-tree.md
+
+# Debug logging
+devDebugLog: .ai/debug-log.md
+
+# Story location
+devStoryLocation: docs/stories
