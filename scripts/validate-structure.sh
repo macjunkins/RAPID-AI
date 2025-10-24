@@ -103,14 +103,14 @@ if [ $SCRIPT_ERRORS -gt 0 ]; then
     ERRORS=$((ERRORS + SCRIPT_ERRORS))
 fi
 
-# Check for BMAD branding (should not be in dist)
+# Check for legacy BMAD branding (should no longer appear anywhere in dist)
 echo ""
-echo -e "${BLUE}Checking for BMAD branding...${NC}"
+echo -e "${BLUE}Scanning for legacy BMAD branding...${NC}"
 BMAD_COUNT=$(grep -r "BMAD" dist/.vscode/ 2>/dev/null | grep -v "Binary file" | wc -l || echo "0")
 if [ "$BMAD_COUNT" -gt 0 ]; then
-    echo -e "   ${YELLOW}⚠${NC}  Found $BMAD_COUNT references to 'BMAD' in dist/"
-    echo -e "   ${YELLOW}💡 Consider removing BMAD branding (planned for Phase 2)${NC}"
-    WARNINGS=$((WARNINGS + 1))
+    echo -e "   ${RED}✗${NC} Found $BMAD_COUNT references to 'BMAD' in dist/.vscode/"
+    echo -e "   ${YELLOW}💡 Remove remaining BMAD references before distributing.${NC}"
+    ERRORS=$((ERRORS + 1))
 else
     echo -e "   ${GREEN}✓${NC} No BMAD branding found"
 fi

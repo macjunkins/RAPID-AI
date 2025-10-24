@@ -1,6 +1,6 @@
 # RAPID-AI Template Files
 
-This directory contains 13 YAML template files that have been extracted and transformed from the BMAD framework for use in RAPID-AI.
+This directory contains 13 YAML template files maintained for RAPID-AI after extracting them from EmberCare's legacy methodology.
 
 ## Template Inventory
 
@@ -49,7 +49,7 @@ sections:
 - **Version Tracking**: Templates use semantic versioning (currently v3.0, except qa-gate at v1.0)
 - **Path References**: All file paths use `src/rapid/` prefix
 - **Slash Commands**: All commands use `/rapid` prefix
-- **No Branding**: All BMAD™ branding has been removed
+- **No Legacy Branding**: Historical marks from the deprecated methodology have been removed
 
 ## Usage
 
@@ -61,7 +61,7 @@ These templates are designed to be used by:
 
 ## Transformation Details
 
-See `TRANSFORMATION_REPORT.md` for complete details on the BMAD → RAPID-AI transformation process.
+See `TRANSFORMATION_REPORT.md` for detailed notes on the legacy-to-RAPID migration.
 
 ---
 

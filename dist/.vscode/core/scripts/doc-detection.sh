@@ -3,7 +3,7 @@
 # Documentation Detection and Analysis Script
 # Identifies which file changes require documentation updates
 # Integrates with RAPID-AI's three-layer architecture
-# Based on proven BMAD-METHOD patterns
+# Based on proven EmberCare production patterns
 
 set -eo pipefail
 

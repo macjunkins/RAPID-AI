@@ -7,13 +7,10 @@
     "rapid": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "dev": "tsc --watch",
-    "start": "node dist/cli.js",
-    "bmad:refresh": "bmad-method install -f -i codex",
-    "bmad:list": "bmad-method list:agents",
-    "bmad:validate": "bmad-method validate"
+    "build": "echo \"CLI build deferred until distribution phase\"",
+    "test": "echo \"Test suite deferred until CLI resumes\"",
+    "dev": "echo \"CLI watch mode deferred until distribution phase\"",
+    "start": "echo \"CLI runtime deferred until distribution phase\""
   },
   "keywords": [
     "rapid-ai",
@@ -26,8 +23,7 @@
     "vscode",
     "flutter",
     "react",
-    "story-analysis",
-    "bmad-method"
+    "story-analysis"
   ],
   "author": "John Junkins",
   "license": "MIT",

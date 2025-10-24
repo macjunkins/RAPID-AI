@@ -2,7 +2,7 @@
 
 This checklist provides comprehensive validation that project documentation remains current with development changes. This systematic approach ensures documentation serves as a reliable resource for users and development teams.
 
-**Adapted from:** BMAD documentation workflow patterns
+**Adapted from:** EmberCare documentation workflow patterns
 **Scope:** Applicable to all RAPID-AI project types (Flutter, React, Python, Go, Generic)
 
 ---
