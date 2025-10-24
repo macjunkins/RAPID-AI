@@ -10,31 +10,50 @@ Transform any development project with AI-powered story analysis and implementat
 
 ## 🎯 **What This Framework Does**
 
-Automates the tedious parts of software development with AI assistance:
+RAPID-AI provides **two complementary modes** for AI-assisted development:
 
+### **Execution Mode** (YAML-First, Deterministic)
 - **📖 Story Analysis**: AI reads your requirements and generates technical implementation guidance
 - **🏗️ Implementation Planning**: Detailed step-by-step plans with architecture recommendations
 - **📝 Documentation Workflow**: Automated documentation verification keeps docs current with code changes
 - **🔄 Workflow Integration**: VS Code tasks, Git automation, document generation
-- **🌐 Multi-Project**: Works with Flutter, React, Python, Go, and any project type
 - **🤖 Multi-AI**: Supports GitHub Copilot, Claude, GPT-4, and more
+
+### **Conversational Mode** (NEW - Discovery & Planning)
+- **💬 RAPID Agent**: Unified conversational agent for systematic workflows
+- **📋 26 Workflow Tasks**: Brownfield epics, stories, documentation, elicitation
+- **📄 13 YAML Templates**: PRD, architecture, story, QA gate, and more
+- **✅ 7 Quality Checklists**: Story definition of done, documentation currency, etc.
+- **🧠 Knowledge Base**: Brainstorming techniques, elicitation methods, test frameworks
+- **🌐 Multi-Project**: Works with Flutter, React, Python, Go, and any project type
 
 ## 🚀 **Quick Start**
 
-### Install
+### **Execution Mode** (YAML-First Code Generation)
 ```bash
+# Install
 npm install -g rapid-ai
-```
 
-### Initialize in Your Project
-```bash
+# Initialize in your project
 cd your-project
 rapid init --type flutter --ai copilot
+
+# Analyze a feature
+rapid analyze 1 4 "User Authentication"
 ```
 
-### Analyze a Feature
+### **Conversational Mode** (Discovery & Planning)
 ```bash
-rapid analyze 1 4 "User Authentication"
+# Activate RAPID agent in Claude CLI
+claude /rapid
+
+# Available commands
+*help                        # Show all commands
+*create-doc prd-tmpl         # Create PRD from template
+*task brownfield-create-epic # Create epic for brownfield project
+*execute-checklist story-dod # Run story definition of done checklist
+*document-project            # Generate brownfield documentation
+*kb                          # Toggle knowledge base mode
 ```
 
 ## 📊 **Proven Results**
@@ -178,18 +197,19 @@ ai-workflow plan 1 4 "User Authentication"
 
 ### **VS Code Tasks**
 Access via Command Palette:
-- `AI Workflow: Analyze Story`
-- `AI Workflow: Generate Implementation Plan`
-- `AI Workflow: Flutter Analysis` (for Flutter projects)
-- `AI Workflow: Complete Story Setup`
+- `RAPID: Conversational Mode - Instructions` — Launch `/rapid` in Claude
+- `RAPID: Create Document / Execute Task / Run Checklist` — Generate conversational commands for templates, tasks, or checklists
+- `RAPID: Generate Story from Epic` — Create story YAML via Claude CLI
+- `RAPID: Test Claude CLI` — Verify dependencies
+- `RAPID: Validate YAML Files / Query All Stories / Show Epic Summary` — Execution utilities backed by `yq`
 
 ### **Direct Script Usage**
 ```bash
-# Use core framework scripts directly
-./ai-dev-workflow/core/scripts/ai-discovery.sh 1 4 "Feature Name" output.md
+# Use core framework scripts directly (after copying .vscode/)
+./.vscode/core/scripts/ai-discovery.sh 1 4 "Feature Name" output.md
 
-# Use Flutter adapter
-./ai-dev-workflow/adapters/flutter/scripts/flutter-discovery.sh 1 4 "Feature" output.md
+# Use Flutter adapter (if included)
+./.vscode/adapters/flutter/scripts/flutter-discovery.sh 1 4 "Feature" output.md
 ```
 
 ## 🏥 **Real-World Example: EmberCare**
