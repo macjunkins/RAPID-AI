@@ -1,0 +1,273 @@
+story:
+  id: "1.3"
+  epic_id: 1
+  title: "Implement Documentation-as-You-Go Workflow Integration"
+  priority: "high"
+  status: "planned"
+  created: "2025-10-23"
+  updated: "2025-10-23"
+
+  metadata:
+    estimated_effort: "4-5 hours"
+    actual_effort: null
+    assigned_to: "macjunkins"
+    tags: ["documentation", "workflow", "yaml", "automation", "quality"]
+
+  rationale: |
+    IMMEDIATE VALUE: Documentation drift is a critical issue in RAPID-AI development.
+    The existing documentation workflow (core/scripts/doc-detection.sh and 
+    task-completion-verification.sh) detects documentation needs but doesn't 
+    integrate into the YAML-first story workflow.
+    
+    This story bridges the gap by:
+    1. Converting documentation detection to work with YAML story specs
+    2. Automating documentation updates as part of story completion
+    3. Preventing documentation debt from accumulating
+    4. Ensuring RAPID-AI's own documentation stays current during Epic 1 development
+    
+    By implementing this NOW, we ensure all remaining Epic 1 stories automatically
+    maintain documentation currency without manual tracking.
+
+  description: |
+    Integrate existing documentation detection and verification scripts into the
+    YAML-first story workflow. Create a systematic approach where documentation
+    updates are tracked in story YAML and verified before story completion.
+    
+    Current State:
+    - Documentation detection exists but operates independently
+    - No integration with YAML story specifications
+    - Manual verification required for documentation currency
+    - Documentation requirements not captured in structured format
+    
+    Target State:
+    - Story YAML includes documentation_impact section
+    - Documentation changes tracked alongside code changes
+    - Automated verification before marking story as completed
+    - VS Code task "RAPID: Verify Story Documentation" validates currency
+    
+    Workflow Integration:
+    1. During story implementation, track documentation changes
+    2. Before story completion, run documentation verification
+    3. Story YAML updated with documentation status
+    4. Completion blocked if critical documentation gaps exist
+    
+    This creates a systematic documentation-as-you-go workflow that prevents
+    technical debt and ensures RAPID-AI documentation evolves with the codebase.
+
+  acceptance_criteria:
+    - criteria: "Story YAML schema includes documentation_impact section"
+      validation: "schemas/story-schema.yaml defines documentation_impact with required fields"
+    
+    - criteria: "Documentation detection script accepts story YAML path as input"
+      validation: "core/scripts/doc-detection.sh --story-yaml docs/stories/1-3-story.yaml succeeds"
+    
+    - criteria: "VS Code task 'RAPID: Verify Story Documentation' exists and works"
+      validation: "Task runs, analyzes story changes, reports documentation status"
+    
+    - criteria: "Story completion verification includes documentation check"
+      validation: "core/scripts/verify-story-completion.sh checks documentation_impact section"
+    
+    - criteria: "Documentation status tracked in story YAML metadata"
+      validation: "Story YAML includes documentation.status, documentation.files_updated, documentation.verified_date"
+    
+    - criteria: "Critical documentation gaps block story completion"
+      validation: "Verification script exits non-zero when critical gaps exist"
+    
+    - criteria: "Integration works with existing Epic 1 documentation"
+      validation: "Can verify documentation for Epic 1, Story 1.1, Story 1.2"
+
+  technical_notes:
+    yaml_schema_extension: |
+      Extend story schema with documentation_impact section:
+      
+      documentation_impact:
+        affected_files:
+          - file: "path/to/file.md"
+            type: "update|create"
+            sections: ["section names that need updates"]
+            priority: "critical|major|minor"
+        
+        verification:
+          last_checked: "YYYY-MM-DD"
+          status: "current|needs_update|blocked"
+          gaps: ["description of any gaps"]
+        
+        completion_requirements:
+          - "What documentation must be updated before completion"
+    
+    script_modifications: |
+      Modify core/scripts/doc-detection.sh:
+      - Accept --story-yaml flag to read story context
+      - Extract implementation_files from story YAML
+      - Map file changes to documentation requirements
+      - Output YAML fragment for documentation_impact section
+      
+      Modify core/scripts/task-completion-verification.sh:
+      - Read documentation_impact from story YAML
+      - Verify all affected_files exist and are current
+      - Check completion_requirements are met
+      - Return status code based on blocking criteria
+    
+    integration_points: |
+      VS Code Tasks:
+      - "RAPID: Verify Story Documentation" - runs verification
+      - "RAPID: Update Story Documentation Status" - updates YAML metadata
+      - Integrate into existing story completion workflow
+      
+      Common Functions:
+      - Add verify_story_documentation() to core/workflows/common-functions.sh
+      - Leverage existing run_ai_analysis() for gap detection
+      - Use yq for YAML manipulation
+    
+    backward_compatibility: |
+      - Existing documentation scripts continue to work standalone
+      - documentation_impact section is optional in story YAML
+      - Feature can be disabled via .ai-workflow.yaml configuration
+      - EmberCare adapter unaffected (uses separate workflow)
+
+  implementation_files:
+    create:
+      - path: "core/scripts/verify-story-documentation.sh"
+        purpose: "Story-specific documentation verification orchestrator"
+        details: |
+          Reads story YAML, extracts documentation requirements,
+          runs doc-detection.sh, updates story YAML with status,
+          returns exit code based on blocking criteria.
+      
+      - path: "core/prompts/documentation-gap-analysis.txt"
+        purpose: "Claude CLI prompt for analyzing documentation completeness"
+        details: |
+          Template for AI-powered documentation gap analysis.
+          Takes story YAML and current documentation state as input,
+          returns structured recommendations for documentation updates.
+      
+      - path: "schemas/documentation-impact-fragment.yaml"
+        purpose: "Schema fragment for documentation_impact section"
+        details: |
+          Defines structure of documentation_impact section
+          to be integrated into main story schema.
+    
+    modify:
+      - path: "schemas/story-schema.yaml"
+        changes: |
+          Add documentation_impact section to story schema.
+          Include affected_files, verification, completion_requirements.
+          Mark as optional to maintain backward compatibility.
+      
+      - path: "core/scripts/doc-detection.sh"
+        changes: |
+          Add --story-yaml flag to accept story YAML path.
+          Extract implementation_files from YAML using yq.
+          Output documentation_impact YAML fragment.
+          Maintain backward compatibility with existing usage.
+      
+      - path: "core/scripts/task-completion-verification.sh"
+        changes: |
+          Add documentation verification step.
+          Read documentation_impact from story YAML.
+          Check completion_requirements before marking complete.
+          Respect blocking configuration from .ai-workflow.yaml.
+      
+      - path: "templates/vscode/tasks.json"
+        changes: |
+          Add "RAPID: Verify Story Documentation" task.
+          Add "RAPID: Update Documentation Status" task.
+          Integrate verification into story completion workflow.
+          Add problem matcher for documentation gap warnings.
+      
+      - path: "core/workflows/common-functions.sh"
+        changes: |
+          Add verify_story_documentation() function.
+          Add update_story_documentation_status() function.
+          Integrate with existing AI tool abstraction.
+      
+      - path: ".ai-workflow.yaml"
+        changes: |
+          Add documentation_workflow.story_integration.enabled flag.
+          Add documentation_workflow.blocking_on_completion flag.
+          Add documentation_workflow.gap_analysis.ai_tool configuration.
+
+  testing_approach:
+    manual_tests:
+      - test: "Generate documentation impact for Story 1.1"
+        steps:
+          - "Run: ./core/scripts/doc-detection.sh --story-yaml docs/stories/1-1-story.yaml"
+          - "Verify YAML output includes affected_files"
+          - "Check that CLAUDE.md and README.md are identified"
+          - "Validate output against schema fragment"
+        expected: "Valid YAML fragment identifying documentation requirements"
+      
+      - test: "Verify documentation for completed story"
+        steps:
+          - "Create test story YAML with documentation_impact section"
+          - "Run: ./core/scripts/verify-story-documentation.sh docs/stories/test-story.yaml"
+          - "Verify script checks all affected files"
+          - "Confirm appropriate exit code"
+        expected: "Verification completes with accurate status reporting"
+      
+      - test: "Integration with VS Code task"
+        steps:
+          - "Open VS Code Command Palette"
+          - "Run task: RAPID: Verify Story Documentation"
+          - "Select Story 1.1 from input prompt"
+          - "Review output in terminal"
+          - "Check Problems panel for any gaps"
+        expected: "Task executes, reports status, surfaces issues appropriately"
+      
+      - test: "Block story completion on critical gaps"
+        steps:
+          - "Create story YAML with critical documentation requirement"
+          - "Mark affected documentation as outdated"
+          - "Run: ./core/scripts/verify-story-documentation.sh --blocking"
+          - "Verify exit code is non-zero"
+          - "Update documentation to resolve gap"
+          - "Re-run verification, confirm success"
+        expected: "Verification correctly blocks when gaps exist, passes when resolved"
+      
+      - test: "AI-powered gap analysis"
+        steps:
+          - "Run verification with --ai-analysis flag"
+          - "Review Claude CLI recommendations"
+          - "Validate recommendations are contextually relevant"
+          - "Check token usage is reasonable"
+        expected: "AI provides actionable documentation improvement suggestions"
+
+    success_validation:
+      - "Story schema includes documentation_impact section and validates correctly"
+      - "Documentation detection works with both file paths and story YAML input"
+      - "Verification script accurately identifies documentation gaps"
+      - "VS Code tasks provide clear, actionable feedback to developers"
+      - "Integration works seamlessly with existing Epic 1 workflows"
+      - "Documentation status tracking prevents completion of incomplete stories"
+      - "Feature can be disabled without breaking existing functionality"
+      - "Successfully used to verify documentation for Stories 1.1 and 1.2"
+
+  dependencies:
+    required:
+      - dependency: "Story 1.2 completed - Story YAML schema defined"
+        validation: "schemas/story-schema.yaml exists and is valid"
+        installation: "Complete Story 1.2 first"
+      
+      - dependency: "yq command-line tool for YAML manipulation"
+        validation: "yq --version succeeds"
+        installation: "brew install yq (macOS) or equivalent"
+      
+      - dependency: "Claude CLI for AI-powered gap analysis"
+        validation: "claude --version succeeds"
+        installation: "Already installed per Epic 1 prerequisites"
+      
+      - dependency: "Existing documentation detection scripts"
+        validation: "core/scripts/doc-detection.sh exists and is executable"
+        installation: "Already present in RAPID-AI codebase"
+
+  completion_criteria:
+    - "Story schema extended with documentation_impact section"
+    - "Documentation detection integrated with YAML story workflow"
+    - "VS Code tasks provide documentation verification capabilities"
+    - "Story completion verification includes documentation checks"
+    - "Successfully verified documentation for at least 2 existing stories"
+    - "Integration tested end-to-end with manual story workflow"
+    - "Configuration options allow enabling/disabling feature"
+    - "Documentation updated: CLAUDE.md explains documentation workflow integration"
+    - "All acceptance criteria met and validated"
+    - "No regressions in existing documentation detection functionality"
