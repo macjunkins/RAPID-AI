@@ -1,0 +1,157 @@
+# RAPID-AI Story YAML Schema
+# This schema defines the structure for story specifications
+# Used by: Story generation scripts, validation tools, documentation
+
+schema_version: "1.0"
+description: "YAML schema for RAPID-AI story specifications"
+
+story:
+  required_fields:
+    - id              # String: Story identifier (e.g., "1.2")
+    - epic_id         # Number: Parent epic ID
+    - title           # String: Story title
+    - priority        # String: critical|high|medium|low
+    - status          # String: planned|in_progress|completed|blocked
+    - created         # Date: YYYY-MM-DD
+    - updated         # Date: YYYY-MM-DD
+    - rationale       # String: WHY this story matters
+    - description     # String: WHAT this story does
+    - acceptance_criteria  # Array: Criteria for completion
+
+  optional_fields:
+    - metadata        # Object: Effort, assignment, tags
+    - technical_notes # Object: Technical details by area
+    - implementation_files  # Object: Files to create/modify
+    - testing_approach      # Object: Test plans and validation
+    - dependencies          # Object: Required dependencies
+    - completion_criteria   # Array: Additional completion checks
+
+  field_definitions:
+    id:
+      type: string
+      pattern: "^\\d+\\.\\d+$"
+      example: "1.2"
+      description: "Epic.Story format"
+
+    epic_id:
+      type: number
+      example: 1
+      description: "References parent epic"
+
+    title:
+      type: string
+      max_length: 100
+      description: "Concise story title"
+
+    priority:
+      type: enum
+      values: [critical, high, medium, low]
+      description: "Story priority level"
+
+    status:
+      type: enum
+      values: [planned, in_progress, completed, blocked]
+      description: "Current story status"
+
+    created:
+      type: date
+      format: "YYYY-MM-DD"
+      description: "Story creation date"
+
+    updated:
+      type: date
+      format: "YYYY-MM-DD"
+      description: "Last update date"
+
+    metadata:
+      type: object
+      fields:
+        estimated_effort: string  # e.g., "2-3 hours"
+        actual_effort: string|null
+        assigned_to: string
+        tags: array[string]
+
+    rationale:
+      type: string
+      multiline: true
+      description: "WHY this story matters - business value, technical necessity"
+
+    description:
+      type: string
+      multiline: true
+      description: "WHAT this story does - user workflow, technical approach, outcomes"
+
+    acceptance_criteria:
+      type: array
+      item_type: object
+      fields:
+        criteria: string      # What must be true
+        validation: string    # How to verify
+
+    technical_notes:
+      type: object
+      description: "Free-form technical details organized by area"
+      example:
+        database: "Drift schema changes required"
+        state_management: "BLoC pattern implementation"
+
+    implementation_files:
+      type: object
+      fields:
+        create:
+          type: array
+          item_fields:
+            path: string        # Relative path
+            purpose: string     # Why needed
+            details: string     # Additional info
+        modify:
+          type: array
+          item_fields:
+            path: string        # Relative path
+            changes: string     # What changes
+
+    testing_approach:
+      type: object
+      fields:
+        manual_tests:
+          type: array
+          item_fields:
+            test: string              # Test name
+            steps: array[string]      # Test steps
+            expected: string          # Expected outcome
+        success_validation:
+          type: array
+          item_type: string
+
+    dependencies:
+      type: object
+      fields:
+        required:
+          type: array
+          item_fields:
+            dependency: string      # What's required
+            validation: string      # How to verify
+            installation: string    # How to install
+
+    completion_criteria:
+      type: array
+      item_type: string
+      description: "Additional criteria for story completion"
+
+# Example validation rules
+validation:
+  rules:
+    - "id must match pattern \\d+\\.\\d+"
+    - "epic_id must be a positive integer"
+    - "status must be one of: planned, in_progress, completed, blocked"
+    - "priority must be one of: critical, high, medium, low"
+    - "created and updated must be valid YYYY-MM-DD dates"
+    - "acceptance_criteria must have at least one criterion"
+
+# Notes for implementers
+notes:
+  - "All multi-line strings should use | or > YAML syntax"
+  - "Indentation is 2 spaces per level"
+  - "Dates use ISO 8601 format (YYYY-MM-DD)"
+  - "Arrays can be empty but should be present if defined"
+  - "Optional fields can be omitted entirely"

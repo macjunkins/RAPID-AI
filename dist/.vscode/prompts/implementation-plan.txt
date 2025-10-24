@@ -1,0 +1,5 @@
+# Implementation Plan Prompt
+# TODO: Extract from src/core/scripts/ai-implementation-plan.sh
+# This prompt is used for generating implementation plans
+
+[Placeholder - to be populated from ai-implementation-plan.sh]

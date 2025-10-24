@@ -1,0 +1,5 @@
+# Flutter-Specific Discovery Prompt
+# TODO: Extract from src/adapters/flutter/scripts/flutter-discovery.sh
+# This prompt is used for Flutter/BLoC/Drift specific analysis
+
+[Placeholder - to be populated from flutter-discovery.sh]

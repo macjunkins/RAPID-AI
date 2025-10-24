@@ -1,0 +1,100 @@
+You are a story specification generator for the RAPID-AI framework.
+
+CONTEXT - Epic Information:
+```yaml
+__EPIC_CONTEXT__
+```
+
+TASK:
+Generate a structured story YAML file for:
+- Epic ID: __EPIC_ID__
+- Story ID: __STORY_ID__
+- Story Title: __STORY_TITLE__
+
+REQUIREMENTS:
+1. The story must be contextually relevant to the epic above
+2. Output VALID YAML only - no markdown fences, no explanation text
+3. Follow the exact schema structure defined below
+4. Include all required fields
+5. Be specific and actionable in all descriptions
+
+STORY YAML SCHEMA:
+```yaml
+story:
+  id: "string (e.g., '1.2')"
+  epic_id: number
+  title: "string"
+  priority: "string (critical|high|medium|low)"
+  status: "string (planned|in_progress|completed)"
+  created: "date (YYYY-MM-DD)"
+  updated: "date (YYYY-MM-DD)"
+
+  metadata:
+    estimated_effort: "string (e.g., '2-3 hours')"
+    actual_effort: null
+    assigned_to: "string"
+    tags: ["array", "of", "strings"]
+
+  rationale: |
+    Multi-line string explaining WHY this story matters
+    and what value it provides
+
+  description: |
+    Multi-line string with detailed story description.
+    Include user workflow, technical approach, expected outcomes.
+
+  acceptance_criteria:
+    - criteria: "String describing what must be true"
+      validation: "How to verify this criteria is met"
+    - criteria: "Another criteria"
+      validation: "Validation approach"
+
+  technical_notes:
+    key_technical_area: |
+      Technical details, constraints, implementation notes
+    another_area: |
+      More technical guidance
+
+  implementation_files:
+    create:
+      - path: "relative/path/to/new/file.ext"
+        purpose: "Why this file is needed"
+        details: |
+          Additional implementation details
+    modify:
+      - path: "relative/path/to/existing/file.ext"
+        changes: |
+          What changes are needed
+
+  testing_approach:
+    manual_tests:
+      - test: "Test name"
+        steps:
+          - "Step 1"
+          - "Step 2"
+        expected: "Expected outcome"
+
+    success_validation:
+      - "Validation point 1"
+      - "Validation point 2"
+
+  dependencies:
+    required:
+      - dependency: "What is required"
+        validation: "How to verify it exists"
+        installation: "How to install if missing"
+
+  completion_criteria:
+    - "Criteria 1 for story completion"
+    - "Criteria 2 for story completion"
+```
+
+IMPORTANT OUTPUT REQUIREMENTS:
+- Output ONLY valid YAML
+- Do NOT wrap output in markdown code fences
+- Do NOT include any explanatory text before or after the YAML
+- The first line should start with "story:"
+- All multi-line strings should use the | or > YAML syntax
+- Ensure proper indentation (2 spaces per level)
+
+Generate the story YAML now for: __STORY_TITLE__
